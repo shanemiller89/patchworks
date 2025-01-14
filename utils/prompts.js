@@ -1,3 +1,7 @@
+// utils/prompts.js
+
+import logger from '../reports/logger.js'
+import { styles } from '../reports/styles.js'
 import readline from 'readline'
 
 /**
@@ -32,14 +36,16 @@ export async function promptUserForDirectory() {
 
     const askQuestion = () => {
       rl.question(
-        'Do you want to save reports in a dedicated directory (update_reports)? (y/n) ',
+        styles.generic(
+          'Do you want to save reports in a dedicated directory (update_reports)? (y/n) ',
+        ),
         (answer) => {
           const lowerAnswer = answer.toLowerCase()
           if (lowerAnswer === 'y' || lowerAnswer === 'n') {
             rl.close()
             resolve(lowerAnswer === 'y')
           } else {
-            console.log('Please answer with "y" or "n".')
+            logger.message('Please answer with "y" or "n".')
             askQuestion() // Reprompt
           }
         },

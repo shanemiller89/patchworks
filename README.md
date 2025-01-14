@@ -1,7 +1,9 @@
-# Version Tamer (Alpha)
+# Patchworks (Alpha)
 
 ## Overview
-Version Tamer is a CLI tool designed to streamline version management and change tracking in software projects. This alpha version demonstrates its core functionalities.
+Patchworks is a CLI tool designed to streamline version management and change tracking in software projects. This alpha version demonstrates its core functionalities.
+
+# Major work in progress! Don't actually use right now 🙃
 
 ## Features
 - Detects and processes breaking changes.

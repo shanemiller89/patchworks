@@ -1,9 +1,16 @@
 import boxen from 'boxen'
+// eslint-disable-next-line lodash/import-scope
 import _ from 'lodash'
 import { MAIN_TITLE } from '../utils/constants.js'
 import { mainTitleOptions, packageReportOptions, styles } from './styles.js'
 
-function summarizeCategorizedNotes(categorizedNotes) {
+/**
+ * Summarizes categorized notes by counting the number of entries in each category.
+ * Returns an object with totals for each category.
+ * @param {Array} categorizedNotes - An array of categorized notes.
+ * @returns {Object} An object with totals for each category.
+ */
+export function summarizeCategorizedNotes(categorizedNotes) {
   if (!categorizedNotes || categorizedNotes.length === 0) {
     // Return null values if categorizedNotes is null or empty
     return {
@@ -94,7 +101,7 @@ ${styles.separator}
   Refactor: ${styles.value(refactor)}
   Chore: ${styles.value(chore)}
   Miscellaneous: ${styles.value(miscellaneous)}
-  Fix: ${styles.value(uncategorized)}
+  Uncategorized: ${styles.value(uncategorized)}
   ${styles.separator}
   `
   return report
@@ -120,7 +127,9 @@ export function packageReport(pkg) {
  * @param {string} message - The message to log.
  */
 export function message(message) {
-  console.log(`${styles.message(message)}`)
+  if (process.env.DEBUG) {
+    console.log(`${styles.message(message)}`)
+  }
 }
 
 /**
@@ -130,22 +139,24 @@ export function message(message) {
  * @param {object} [metadata] - Additional metadata, such as version details.
  */
 export function logReviewState(packageName, state, metadata = {}) {
-  const { reason, current, latest, updateType } = metadata
+  if (process.env.DEBUG) {
+    const { reason, current, latest, updateType } = metadata
 
-  if (state === 'evaluating') {
-    console.log(
-      styles.evaluatingState(
-        `[[ == EVALUATING PACKAGE == ]] - [${packageName}]-[${current} -> ${latest}]-[${updateType}]`,
-      ),
-    )
-  } else if (state === 'skipping') {
-    console.warn(
-      styles.skippingState(
-        `[[ == SKIPPING PACKAGE == ]] - [${packageName}]-[${current} -> ${latest}]-[${updateType}]`,
-      ),
-    )
+    if (state === 'evaluating') {
+      console.log(
+        styles.evaluatingState(
+          `[[ == EVALUATING PACKAGE == ]] - [${packageName}]-[${current} -> ${latest}]-[${updateType}]`,
+        ),
+      )
+    } else if (state === 'skipping') {
+      console.warn(
+        styles.skippingState(
+          `[[ == SKIPPING PACKAGE == ]] - [${packageName}]-[${current} -> ${latest}]-[${updateType}]`,
+        ),
+      )
+    }
+    console.log(styles.stateMessage(`[ ${reason} ]`))
   }
-  console.log(styles.stateMessage(`[ ${reason} ]`))
 }
 
 /**
@@ -153,7 +164,9 @@ export function logReviewState(packageName, state, metadata = {}) {
  * @param {string} message - The message to log.
  */
 export function info(message) {
-  console.log(`${styles.info('[INFO]')} ${message}`)
+  if (process.env.DEBUG) {
+    console.log(`${styles.info('[INFO]')} ${message}`)
+  }
 }
 
 /**
@@ -161,7 +174,9 @@ export function info(message) {
  * @param {string} message - The success message.
  */
 export function success(message) {
-  console.log(`${styles.success('[SUCCESS]')} ${message}`)
+  if (process.env.DEBUG) {
+    console.log(`${styles.success('[SUCCESS]')} ${message}`)
+  }
 }
 
 /**
@@ -169,7 +184,9 @@ export function success(message) {
  * @param {string} message - The warning message.
  */
 export function warn(message) {
-  console.warn(`${styles.warning('[WARNING]')} ${message}`)
+  if (process.env.DEBUG) {
+    console.warn(`${styles.warning('[WARNING]')} ${message}`)
+  }
 }
 
 /**
@@ -177,7 +194,9 @@ export function warn(message) {
  * @param {string} message - The error message.
  */
 export function error(message) {
-  console.error(`${styles.error('[ERROR]')} ${message}`)
+  if (process.env.DEBUG) {
+    console.error(`${styles.error('[ERROR]')} ${message}`)
+  }
 }
 
 /**
@@ -195,15 +214,17 @@ export function debug(message) {
  * @param {string} title - The title or report name
  */
 export function titleHeading(title) {
-  const padding = 3 // Padding space on each side of the title
-  const totalLength = title.length + padding * 2 + 2 // Adjust for the title, padding, and '=' borders
-  const line = '='.repeat(totalLength)
+  if (process.env.DEBUG) {
+    const padding = 3 // Padding space on each side of the title
+    const totalLength = title.length + padding * 2 + 2 // Adjust for the title, padding, and '=' borders
+    const line = '='.repeat(totalLength)
 
-  const paddedTitle = `=   ${title.toUpperCase()}   =`
+    const paddedTitle = `=   ${title.toUpperCase()}   =`
 
-  console.log(styles.sectionHeader(line))
-  console.log(styles.titleHeader(paddedTitle)) // Header content
-  console.log(styles.sectionHeader(line))
+    console.log(styles.sectionHeader(line))
+    console.log(styles.titleHeader(paddedTitle)) // Header content
+    console.log(styles.sectionHeader(line))
+  }
 }
 
 /**
@@ -211,16 +232,20 @@ export function titleHeading(title) {
  * @param {string} message - The heading message.
  */
 export function heading(message) {
-  console.log(
-    `${styles.sectionHeader(`[ == -- ${message.toUpperCase()} -- == ]`)}`,
-  )
+  if (process.env.DEBUG) {
+    console.log(
+      `${styles.sectionHeader(`[ == -- ${message.toUpperCase()} -- == ]`)}`,
+    )
+  }
 }
 
 /**
  * Logs a separator for better readability.
  */
 export function separator() {
-  console.log(styles.separator)
+  if (process.env.DEBUG) {
+    console.log(styles.separator)
+  }
 }
 
 /**
@@ -231,15 +256,17 @@ export function separator() {
  * @param {object} [metadata] - Metadata details.
  */
 export function skipping({ limit, updateDifficulty }) {
-  console.warn(
-    `${styles.skipping(
-      '[-SKIPPING-]',
-    )}  - Update Difficulty Score excludes this package from the ${limit} lowest difficulty updates. -`,
-  )
-  if (updateDifficulty !== undefined) {
-    console.log(
-      `    ${styles.neutral('[DIFFICULTY]')} Score: ${updateDifficulty}`,
+  if (process.env.DEBUG) {
+    console.warn(
+      `${styles.skipping(
+        '[-SKIPPING-]',
+      )}  - Update Difficulty Score excludes this package from the ${limit} lowest difficulty updates. -`,
     )
+    if (updateDifficulty !== undefined) {
+      console.log(
+        `    ${styles.neutral('[DIFFICULTY]')} Score: ${updateDifficulty}`,
+      )
+    }
   }
   // if (Object.keys(metadata).length) {
   //   console.log(
@@ -263,15 +290,17 @@ export function skipping({ limit, updateDifficulty }) {
 //  * @param {object} [metadata] - Metadata details.
  */
 export function evaluating({ limit, updateDifficulty }) {
-  console.log(
-    `${styles.evaluating(
-      '[-EVALUATING-]',
-    )} - Update Difficulty Score ranks this package within the ${limit} lowest difficulty updates. -`,
-  )
-  if (updateDifficulty !== undefined) {
+  if (process.env.DEBUG) {
     console.log(
-      `    ${styles.neutral('[DIFFICULTY]')} Score: ${updateDifficulty}`,
+      `${styles.evaluating(
+        '[-EVALUATING-]',
+      )} - Update Difficulty Score ranks this package within the ${limit} lowest difficulty updates. -`,
     )
+    if (updateDifficulty !== undefined) {
+      console.log(
+        `    ${styles.neutral('[DIFFICULTY]')} Score: ${updateDifficulty}`,
+      )
+    }
   }
   // if (Object.keys(metadata).length) {
   //   console.log(
@@ -297,22 +326,26 @@ export function excluding(
   packageName,
   opts = { reason: null, metadata: null },
 ) {
-  const { reason, metadata } = opts
-  warn(styles.excluding(`[--EXCLUDING--] - ${packageName} -`))
-  warn(styles.neutral(`    [REASON] ${reason}`))
-  if (metadata?.updatingDifficulty !== undefined) {
+  if (process.env.DEBUG) {
+    const { reason, metadata } = opts
+    warn(styles.excluding(`[--EXCLUDING--] - ${packageName} -`))
+    warn(styles.neutral(`    [REASON] ${reason}`))
+    if (metadata?.updatingDifficulty !== undefined) {
+      warn(
+        styles.neutral(
+          `    [DIFFICULTY] Score: ${metadata.updatingDifficulty}`,
+        ),
+      )
+    }
     warn(
-      styles.neutral(`    [DIFFICULTY] Score: ${metadata.updatingDifficulty}`),
+      styles.neutral(
+        `    [METADATA] Details:\n    ${JSON.stringify(metadata, null, 2)
+          .split('\n')
+          .map((line) => `    ${line}`)
+          .join('\n')}`,
+      ),
     )
   }
-  warn(
-    styles.neutral(
-      `    [METADATA] Details:\n    ${JSON.stringify(metadata, null, 2)
-        .split('\n')
-        .map((line) => `    ${line}`)
-        .join('\n')}`,
-    ),
-  )
 }
 
 /**
@@ -321,11 +354,13 @@ export function excluding(
  * @param {string} fallback - The fallback value used.
  */
 export function fallback(field, fallback) {
-  console.log(
-    `${styles.fallback(
-      '[-FALLBACK-]',
-    )} Using fallback for metadata field "${field}": Fallback value -> ${fallback}`,
-  )
+  if (process.env.DEBUG) {
+    console.log(
+      `${styles.fallback(
+        '[-FALLBACK-]',
+      )} Using fallback for metadata field "${field}": Fallback value -> ${fallback}`,
+    )
+  }
 }
 
 const logger = {

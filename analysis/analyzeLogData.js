@@ -1,10 +1,12 @@
 // analyze/logDataAnalyze.js
 
 import * as cheerio from 'cheerio'
+// eslint-disable-next-line lodash/import-scope
 import _ from 'lodash'
 import MarkdownIt from 'markdown-it'
 import markdownItContainer from 'markdown-it-container'
 import markdownItTaskLists from 'markdown-it-task-lists'
+import sanitizeHtml from 'sanitize-html'
 import logger from '../reports/logger.js'
 import { ALL, CHANGELOG, RELEASE_NOTES, UNKNOWN } from '../utils/constants.js'
 import { analyzeLogCategorization } from './categorizeLogs.js'
@@ -32,7 +34,10 @@ function convertMarkdownToHTML(markdownContent) {
       .use(markdownItTaskLists)
       .use(markdownItContainer, 'note')
 
-    const htmlContent = md.render(markdownContent)
+    let htmlContent = md.render(markdownContent)
+
+    // Sanitize the HTML content
+    htmlContent = sanitizeHtml(htmlContent)
 
     // Extract metadata
     const metadata = {
@@ -45,14 +50,14 @@ function convertMarkdownToHTML(markdownContent) {
     const referencePattern = /\b(?:#\d+|PR\s?#?\d+)\b/g
     const matches = markdownContent.match(referencePattern)
     if (matches) {
-      metadata.references = matches
+      metadata.references = new Set(matches)
     }
 
     // Extract GitHub mentions (@username)
     const mentionPattern = /@\w{1,39}\b/g
     const mentions = markdownContent.match(mentionPattern)
     if (mentions) {
-      metadata.mentions = mentions
+      metadata.mentions = new Set(mentions)
     }
 
     // Extract URLs
@@ -60,10 +65,8 @@ function convertMarkdownToHTML(markdownContent) {
       /\bhttps?:\/\/[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|\/))/g
     const urls = markdownContent.match(urlPattern)
     if (urls) {
-      metadata.urls = urls
+      metadata.urls = new Set(urls)
     }
-
-    logger.debug(`Extracted metadata: ${JSON.stringify(metadata, null, 2)}`)
 
     return { htmlContent, metadata }
   } catch (error) {
@@ -93,6 +96,12 @@ function parseHTML(htmlContent) {
   const $ = cheerio.load(htmlContent, { xmlMode: true })
   const sections = {}
 
+  /**
+   * Parses a list element and returns a structured representation of its items.
+   * Handles nested lists by recursively parsing them.
+   * @param {Object} element - The list element to parse.
+   * @returns {Array} An array of list items, each with text and optional children.
+   */
   function parseList(element) {
     return $(element)
       .find('li')
@@ -161,8 +170,8 @@ export async function parseIncludedPackage(pkg) {
   const { releaseNotes, changelog, packageName } = pkg
 
   try {
-    logger.debug(`Release Notes: ${JSON.stringify(releaseNotes, null, 2)}`)
-    logger.debug(`changelog: ${JSON.stringify(changelog, null, 2)}`)
+    logger.debug(`Release Notes: ${typeof releaseNotes}`)
+    logger.debug(`changelog: ${typeof changelog}`)
 
     // Debug the starting context
     logger.debug(
@@ -171,9 +180,13 @@ export async function parseIncludedPackage(pkg) {
       )}, changelog: ${!!changelog}`,
     )
 
-    const notes = _.isEmpty(releaseNotes)
-      ? [{ notes: changelog, version: ALL }]
-      : releaseNotes
+    const notes =
+      _.isEmpty(releaseNotes) ||
+      releaseNotes == UNKNOWN ||
+      releaseNotes == 'SKIPPED'
+        ? [{ notes: changelog, version: ALL }]
+        : releaseNotes
+
     const logSource = _.isEmpty(releaseNotes) ? CHANGELOG : RELEASE_NOTES
 
     // Handle releaseNotes path

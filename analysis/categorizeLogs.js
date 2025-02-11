@@ -20,46 +20,21 @@ const releaseNotePlugin = {
       isA: ['Noun', 'Verb'],
     },
     BreakingChange: {
-      isA: ['Category', 'Noun', 'Verb', 'Adjective'],
-    },
-    Feature: {
-      isA: ['Category', 'Noun', 'Verb', 'Adjective'],
-    },
-    Fix: {
-      isA: ['Category', 'Noun', 'Verb', 'Adjective'],
-    },
-    Deprecation: {
-      isA: ['Category', 'Noun', 'Verb', 'Adjective'],
-    },
-    Security: {
-      isA: ['Category', 'Noun', 'Verb', 'Adjective'],
-    },
-    Documentation: {
-      isA: ['Category', 'Noun', 'Verb', 'Adjective'],
-    },
-    Performance: {
-      isA: ['Category', 'Noun', 'Verb', 'Adjective'],
-    },
-    Refactor: {
-      isA: ['Category', 'Noun', 'Verb', 'Adjective'],
-    },
-    Chore: {
-      isA: ['Category', 'Noun', 'Verb', 'Adjective'],
+      isA: ['Noun', 'Verb'],
     },
   },
 
   words: {
-    change: ['Noun', 'Verb'],
-    changes: ['Noun', 'Verb'],
+    'breaking changes': ['Category', 'BreakingChange'],
     [BREAKING_CHANGES]: ['Category', 'BreakingChange'],
-    [FEATURES]: ['Category', 'Feature'],
-    [FIXES]: ['Category', 'Fix'],
-    [DEPRECATIONS]: ['Category', 'Deprecation'],
-    [SECURITY]: ['Category', 'Security'],
-    [DOCUMENTATION]: ['Category', 'Documentation'],
-    [PERFORMANCE]: ['Category', 'Performance'],
-    [REFACTORS]: ['Category', 'Refactor'],
-    [CHORES]: ['Category', 'Chore'],
+    [FEATURES]: 'Category',
+    [FIXES]: 'Category',
+    [DEPRECATIONS]: 'Category',
+    [SECURITY]: 'Category',
+    [DOCUMENTATION]: 'Category',
+    [PERFORMANCE]: 'Category',
+    [REFACTORS]: 'Category',
+    [CHORES]: 'Category',
   },
 
   api: (View) => {
@@ -103,7 +78,10 @@ nlp.plugin(releaseNotePlugin)
 
 const categoryPatterns = {
   [BREAKING_CHANGES]: [
+    'breaking #Verb',
     'breaking change',
+    'breaking_change',
+    'Breaking Changes',
     'no longer supports',
     'requires migration',
     'incompatible',
@@ -154,6 +132,7 @@ const categoryPatterns = {
     '#Noun can now run',
   ],
   [FIXES]: [
+    'fix',
     'resolved',
     'corrected',
     'patched',
@@ -218,6 +197,7 @@ const categoryPatterns = {
     'applied security update',
   ],
   [DOCUMENTATION]: [
+    'updated docs',
     'readme',
     'examples',
     'tutorials',
@@ -309,6 +289,12 @@ const categoryPatterns = {
 
 // }
 
+/**
+ * Analyzes parsed sections of release notes and categorizes sentences into predefined categories.
+ * Uses natural language processing to match sentences to categories.
+ * @param {Object} parsedSections - Sections parsed from release notes.
+ * @returns {Object} An object containing categorized results.
+ */
 export function analyzeLogCategorization(parsedSections) {
   logger.debug(
     `Analyze Text - parsedSections: ${JSON.stringify(parsedSections, null, 2)}`,
@@ -414,8 +400,17 @@ export function analyzeLogCategorization(parsedSections) {
 
       // Miscellaneous or uncategorized
       if (!categorized) {
+        logger.fallback(
+          `The fallback doc (( ${fallbackDoc.text()} )) for section [[ ${section} ]] is being checked.`,
+          JSON.stringify(fallbackDoc.out('tags'), null, 2),
+        )
         // generic catch all to for ones that def should be
         if (fallbackDoc.has('#Category')) {
+          if (fallbackDoc.has('#BreakingChange')) {
+            categorized = true
+            results[BREAKING_CHANGES].push(fallbackDoc.text())
+            return
+          }
           Object.keys(categoryPatterns).forEach((category) => {
             const hasCategory = fallbackDoc.hasCategory(category, {
               fuzzy: 0.7,

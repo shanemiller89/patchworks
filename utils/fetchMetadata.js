@@ -123,8 +123,8 @@ export function validatePackageMetadata(metadata, pkg) {
   }
   // Check homepage and bugs.url for GitHub fallback compatibility
   if (!githubUrl) {
-    const homepage = metadata.homepage
-    const bugsUrl = metadata.bugs?.url
+    const homepage = metadata.homepage?.replace(/(#readme|\/issues)/g, '')
+    const bugsUrl = metadata.bugs?.url?.replace(/(#readme|\/issues)/g, '')
 
     if (homepage && /github\.com/.test(homepage)) {
       fallbackUrl = homepage

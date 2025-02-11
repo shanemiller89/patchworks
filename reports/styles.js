@@ -23,6 +23,8 @@ export const styles = {
   excluding: chalk.bgYellowBright.black, // Skipping packages
   fallback: chalk.bgCyanBright.black, // Fallbacks
 
+  //--
+  columnHeader: chalk.bold.blueBright,
   // --
   current: chalk.yellow,
   latest: chalk.bold.greenBright,
@@ -70,6 +72,8 @@ export function formatBulletList(items, color = chalk.white) {
 export const mainTitleOptions = {
   title: 'Stitching Your Changelog Chaos into Seamless Updates.',
   titleAlignment: 'center',
+  float: 'center',
+  // fullscreen: (width, height) => [width, height - 1],
   padding: 1, // Space inside the box
   margin: 1, // Space outside the box
   borderStyle: 'double', // Border style ('single', 'double', etc.)

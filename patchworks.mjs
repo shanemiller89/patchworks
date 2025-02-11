@@ -1,37 +1,61 @@
 #!/usr/bin/env node
 
-// import { consoleSummaryReport } from './reports/consoleSummaryReport.js'
-// import { markdownUpdateReport } from './reports/markdownUpdateReport.js'
-// import { breakingChangesReport } from './reports/breakingChangesReport.js'
-import { Command } from 'commander'
-import _ from 'lodash'
-import { parseIncludedPackage } from './analyzing/analyzeLogData.js'
+import { Argument, Command, Option } from 'commander'
+import inquirer from 'inquirer'
+import { ListrInquirerPromptAdapter } from '@listr2/prompt-adapter-inquirer'
+import { color, Listr, PRESET_TIMER, PRESET_TIMESTAMP } from 'listr2'
+import fileSelector from 'inquirer-file-selector'
+import { parseIncludedPackage } from './analysis/analyzeLogData.js'
 import { fetchChangelog } from './releaseLogs/fetchChangelog.js'
 import { fetchCommits } from './releaseLogs/fetchCommits.js'
 import { fetchReleaseNotes } from './releaseLogs/fetchReleaseNotes.js'
+import { bundleReports } from './reports/generateReports.js'
 import logger from './reports/logger.js'
-import { MAIN_TITLE } from './utils/constants.js'
-import { promptUserForDirectory } from './utils/prompts.js'
+import { RELEASE_NOTES, SKIPPED, UNKNOWN } from './utils/constants.js'
 import { installDependencies, writeChanges } from './utils/updating-util.js'
 import { processPackageVersions } from './utils/versionProcessor.js'
-import fs from 'fs'
-import path from 'path'
-// import { generateReports } from './reports/generateReports.js'
+import {
+  promptUserForReportDirectory,
+  askToContinue,
+} from './prompts/prompts.js'
+import _ from 'lodash'
+import {
+  displayResultsTable,
+  customTablePrompt,
+  displayFinalReports,
+} from './reports/consoleTaskReports.js'
+import { renderMainMenu } from './mainMenu.js'
+import { readConfig } from './utils/configUtil.js'
 
+// Register inquirer prompts
+inquirer.registerPrompt('file-selector', fileSelector)
+
+// Set up Commander.js
 const program = new Command()
 
-// Define CLI options
 program
   .name('patchworks')
   .description(
     'Patchworks CLI: A utility for managing dependency updates efficiently.',
   )
-  .usage('--level <level> [--limit <number>] [--level-scope <scope>] [options]')
-  .requiredOption(
-    '-l, --level <level>',
+  .usage('[command] [options]')
+  .version('0.0.1')
+
+const sharedArgs = [
+  new Argument(
+    '<level>',
     'Specify the update level (patch, minor, major)',
-  )
-  .option(
+    (value) => {
+      if (!['patch', 'minor', 'major'].includes(value)) {
+        throw new Error('Level must be one of: patch, minor, major')
+      }
+      return value
+    },
+  ),
+]
+
+const sharedOptions = [
+  new Option(
     '-n, --limit <number>',
     'Limit the number of updates processed',
     (value) => {
@@ -41,8 +65,8 @@ program
       }
       return parsedValue
     },
-  )
-  .option(
+  ),
+  new Option(
     '--level-scope <scope>',
     'Control semantic version filtering (strict or cascade)',
     (value) => {
@@ -52,44 +76,138 @@ program
       return value
     },
     'strict',
-  )
-  .option('-s, --summary', 'Generate a summary report')
-  .option('-k, --skipped', 'Show skipped packages in the output')
-  .option('-w, --write', 'Write changes to a file or make them persistent')
-  .option('-i, --install', 'Install dependencies after processing')
-  .option('--exclude-repoless', 'Exclude packages without repositories')
-  .option('-d, --debug', 'Show verbose debug consoles')
-  .addHelpText(
-    'before',
-    `
-${MAIN_TITLE}
-  A utility for managing dependency updates efficiently.
+  ),
+  new Option('-s, --summary', 'Generate a summary report', false),
+  new Option('-k, --skipped', 'Show skipped packages in the output', false),
+  new Option(
+    '--exclude-repoless',
+    'Exclude packages without repositories',
+    false,
+  ),
+  new Option('-d, --debug', 'Show verbose debug consoles', false),
+  new Option(
+    '--show-excluded',
+    'Show excluded packages in the console output',
+    false,
+  ),
+  new Option('-i, --install', 'Install dependencies after processing', false),
+]
 
-  Example Usage:
-    $ patchworks --level=minor --limit=5
+// Default command to show the main menu
+program
+  .command('menu')
+  .description('Display the main menu')
+  .addArgument(sharedArgs[0])
+  .addOption(sharedOptions[0])
+  .addOption(sharedOptions[1])
+  .addOption(sharedOptions[2])
+  .addOption(sharedOptions[3])
+  .addOption(sharedOptions[4])
+  .addOption(sharedOptions[5])
+  .addOption(sharedOptions[6])
+  .addOption(sharedOptions[7])
+  .action(async (level, options) => {
+    const config = (await readConfig()) || {}
 
-  Required:
-    --level <level>  Specify the update level (patch, minor, major).
+    const finalOptions = {
+      level: level || config.level || 'minor',
+      limit: options.limit || config.limit || null,
+      levelScope: options.levelScope || config.levelScope || 'strict',
+      summary: options.summary || config.summary || false,
+      skipped: options.skipped || config.skipped || false,
+      write: options.write || config.write || false,
+      install: options.install || config.install || true,
+      excludeRepoless:
+        options.excludeRepoless || config.excludeRepoless || false,
+      debug: options.debug || config.debug || false,
+      showExcluded: options.showExcluded || config.showExcluded || false,
+    }
 
-  Optional:
-    --limit <number>        Limit the number of updates processed (default: no limit).
-    --level-scope <scope>   Control semantic version filtering (strict or cascade).
-    --summary               Generate a summary report.
-    --skipped               Show skipped packages in the output.
-    --write                 Persist changes to package.json.
-    --install               Install updated dependencies.
-    --exclude-repoless         Skip packages without repository links.
-  `,
-  )
-  .addHelpText(
-    'after',
-    `
-  ==============================================
-  For more information, visit:
-  https://github.com/shanemiller89/patchworks
-  ==============================================
-  `,
-  )
+    if (finalOptions.debug) {
+      process.env.DEBUG = 'true' // Set DEBUG for the logger
+      logger.warn(`ಥ﹏ಥ -- RUNNING IN DEBUG MODE -- (╥﹏╥)`)
+    }
+
+    await renderMainMenu(finalOptions)
+  })
+
+// Command to run the report-only workflow
+program
+  .command('reports')
+  .description('Run a report-only workflow')
+  .addArgument(sharedArgs[0])
+  .addOption(sharedOptions[0])
+  .addOption(sharedOptions[1])
+  .addOption(sharedOptions[2])
+  .addOption(sharedOptions[3])
+  .addOption(sharedOptions[4])
+  .addOption(sharedOptions[5])
+  .addOption(sharedOptions[6])
+  .action(async (level, options) => {
+    const config = (await readConfig()) || {}
+
+    const finalOptions = {
+      level: level || config.level || 'minor',
+      limit: options.limit || config.limit || null,
+      levelScope: options.levelScope || config.levelScope || 'strict',
+      summary: options.summary || config.summary || false,
+      skipped: options.skipped || config.skipped || false,
+      write: options.write || config.write || false,
+      excludeRepoless:
+        options.excludeRepoless || config.excludeRepoless || false,
+      debug: options.debug || config.debug || false,
+      showExcluded: options.showExcluded || config.showExcluded || false,
+    }
+
+    if (finalOptions.debug) {
+      process.env.DEBUG = 'true' // Set DEBUG for the logger
+      logger.warn(`ಥ﹏ಥ -- RUNNING IN DEBUG MODE -- (╥﹏╥)`)
+    }
+
+    await main({ reportsOnly: true, ...finalOptions }).then(() => {
+      process.exit(0)
+    })
+  })
+
+// Command to run the main update program
+program
+  .command('update')
+  .description('Run the main update program with options')
+  .addArgument(sharedArgs[0])
+  .addOption(sharedOptions[0])
+  .addOption(sharedOptions[1])
+  .addOption(sharedOptions[2])
+  .addOption(sharedOptions[3])
+  .addOption(sharedOptions[4])
+  .addOption(sharedOptions[5])
+  .addOption(sharedOptions[6])
+  .addOption(sharedOptions[7])
+  .action(async (level, options) => {
+    const config = (await readConfig()) || {}
+
+    const finalOptions = {
+      level: level || config.level || 'minor',
+      limit: options.limit || config.limit || null,
+      levelScope: options.levelScope || config.levelScope || 'strict',
+      summary: options.summary || config.summary || false,
+      skipped: options.skipped || config.skipped || false,
+      write: options.write || config.write || false,
+      install: options.install || config.install || true,
+      excludeRepoless:
+        options.excludeRepoless || config.excludeRepoless || false,
+      debug: options.debug || config.debug || false,
+      showExcluded: options.showExcluded || config.showExcluded || false,
+    }
+
+    if (finalOptions.debug) {
+      process.env.DEBUG = 'true' // Set DEBUG for the logger
+      logger.warn(`ಥ﹏ಥ -- RUNNING IN DEBUG MODE -- (╥﹏╥)`)
+    }
+
+    await main(finalOptions).then(() => {
+      process.exit(0)
+    })
+  })
 
 // Configure custom output for errors
 program.configureOutput({
@@ -100,196 +218,281 @@ program.configureOutput({
   },
 })
 
-// Parse CLI arguments
 program.parse(process.argv)
 
-const options = program.opts()
+export async function main(options) {
+  const { reportsOnly } = options
 
-if (options.debug) {
-  process.env.DEBUG = 'true' // Set DEBUG for the logger
-  logger.warn(`ಥ﹏ಥ -- RUNNING IN DEBUG MODE -- (╥﹏╥)`)
-}
+  const tasks = new Listr(
+    [
+      // Step 1: Prompt user for custom directory
+      {
+        title: 'Check for or create Reporting Directory',
+        task: async (ctx, task) => {
+          ctx.reportDir = await promptUserForReportDirectory(task)
+        },
+      },
+      // Step 2: Evaluate outdated dependencies
+      {
+        title: 'Evaluate outdated packages',
+        task: async (ctx, task) => {
+          return await processPackageVersions(task, options)
+        },
+      },
+      // Step 3: Fetch release notes and changelogs
+      {
+        title: 'Fetch release notes and changelogs',
+        task: async (ctx, task) => {
+          const subTasks = ctx.includedPackages.map((pkg) => ({
+            title: `Fetch data for ${pkg.packageName}`,
+            task: async (ctx, task) => {
+              const { packageName, metadata } = pkg
 
-logger.patchworks(' ')
-// Log input
-logger.separator('\n')
-logger.info(`Running with update level: ${options.level}`)
-logger.info(`Update limit: ${options.limit || 'none'}`)
-logger.info(`Level scope: ${options.levelScope || 'strict'}`)
-logger.info(`Summary mode: ${options.summary ? 'Enabled' : 'Disabled'}`)
-logger.info(
-  `Show excluded packages: ${options.excluded ? 'Enabled' : 'Disabled'}`,
-)
-logger.info(`Write changes: ${options.write ? 'Enabled' : 'Disabled'}`)
-logger.info(`Install updates: ${options.install ? 'Enabled' : 'Disabled'}`)
-logger.separator('')
+              return task.newListr(
+                [
+                  {
+                    title: 'Fetch release notes',
+                    enabled: () => metadata.releaseNotesCompatible,
+                    task: async (ctx) => {
+                      pkg.releaseNotes = await fetchReleaseNotes({
+                        packageName,
+                        metadata,
+                      })
+                      if (pkg.releaseNotes) {
+                        pkg.changelog = SKIPPED
+                        pkg.source = RELEASE_NOTES
+                        ctx.source = RELEASE_NOTES
+                      } else {
+                        pkg.releaseNotes = SKIPPED
+                        pkg.source = UNKNOWN
+                        ctx.source = UNKNOWN
+                      }
 
-async function main() {
-  const { level, levelScope } = options
+                      return (pkg.attemptedReleaseNotes = true)
+                    },
+                  },
+                  {
+                    title: 'Fetch changelog',
+                    enabled: () => metadata.fallbackACompatible,
+                    skip: (ctx) => ctx.source === RELEASE_NOTES,
+                    task: async (ctx) => {
+                      pkg.changelog = await fetchChangelog({
+                        packageName,
+                        metadata,
+                      })
+                      if (pkg.changelog) {
+                        pkg.releaseNotes = SKIPPED
+                        pkg.source = 'fallbackA'
+                        ctx.source = 'fallbackA'
+                      } else {
+                        pkg.changelog = SKIPPED
+                        pkg.source = UNKNOWN
+                        ctx.source = UNKNOWN
+                      }
+
+                      return (pkg.attemptedFallbackA = true)
+                    },
+                  },
+                  {
+                    title: 'Fetch commits',
+                    enabled: () => metadata.fallbackBCompatible,
+                    skip: (ctx) =>
+                      ctx.source === RELEASE_NOTES ||
+                      ctx.source === 'fallbackA',
+                    task: async (ctx) => {
+                      pkg.changelog = await fetchCommits({
+                        packageName,
+                        metadata,
+                      })
+                      if (pkg.changelog) {
+                        pkg.releaseNotes = SKIPPED
+                        pkg.source = 'fallbackB'
+                        ctx.source = 'fallbackB'
+                      } else {
+                        pkg.changelog = SKIPPED
+                        pkg.releaseNotes = SKIPPED
+                        pkg.source = UNKNOWN
+                        ctx.source = UNKNOWN
+                      }
+
+                      return (pkg.attemptedFallbackB = true)
+                    },
+                  },
+                  {
+                    title: 'Set unknown status',
+                    enabled: () =>
+                      !metadata.releaseNotesCompatible &&
+                      !metadata.fallbackACompatible &&
+                      !metadata.fallbackBCompatible,
+                    task: async () => {
+                      if (!pkg.releaseNotes && !pkg.changelog) {
+                        pkg.changelog = UNKNOWN
+                        pkg.releaseNotes = UNKNOWN
+                        pkg.source = UNKNOWN
+                      }
+                    },
+                  },
+                ],
+                { concurrent: false, exitOnError: false },
+              )
+            },
+          }))
+
+          return task.newListr(subTasks, { concurrent: false })
+        },
+      },
+      // New Task: Display results and ask to proceed
+      {
+        title: 'Display results and ask to proceed',
+        task: async (ctx, task) => {
+          const resultsTable = await displayResultsTable(ctx.includedPackages)
+          task.output = `Results:\n${resultsTable}`
+
+          const shouldContinue = await askToContinue(
+            task,
+            'Proceed to parse and categorize logs?',
+          )
+          if (!shouldContinue) {
+            throw new Error('Operation cancelled by the user.')
+          }
+        },
+        rendererOptions: { bottomBar: 999 },
+      },
+      // Step 4: Parse and categorize logs
+      {
+        title: 'Parse and categorize logs',
+        task: async (ctx, task) => {
+          const subTasks = ctx.includedPackages.map((pkg) => ({
+            title: `Parse logs for ${pkg.packageName}`,
+            skip: () => {
+              const { releaseNotes, changelog } = pkg
+              return (_.isEmpty(releaseNotes) ||
+                releaseNotes === UNKNOWN ||
+                releaseNotes === SKIPPED) &&
+                (!changelog || changelog === UNKNOWN || changelog === SKIPPED)
+                ? 'Both releaseNotes and changelog are unavailable, skipping parsing.'
+                : false
+            },
+            task: async () => {
+              const result = await parseIncludedPackage(pkg)
+              pkg.importantTerms = result.importantTerms
+              pkg.categorizedNotes = result.categorizedNotes
+            },
+          }))
+
+          return task.newListr(subTasks, { concurrent: false })
+        },
+      },
+      // Step 5: Generate pre-update reports
+      {
+        title: 'Select packages to update',
+        enabled: () => !reportsOnly,
+        task: async (ctx, task) => {
+          // Use the custom table prompt to select packages
+          ctx.selectedPackages = await task
+            .prompt(ListrInquirerPromptAdapter)
+            .run(customTablePrompt, {
+              packages: ctx.includedPackages,
+              task: task,
+            })
+        },
+        rendererOptions: { bottomBar: 999 },
+      },
+      // Step 6: Select packages to update
+      // Step 7: Write changes to package.json (optional)
+      {
+        title: 'Write changes to package.json',
+        enabled: () => !reportsOnly,
+        task: async (ctx) => {
+          await writeChanges(ctx.selectedPackages)
+        },
+      },
+      // Step 8: Install updated dependencies (optional)
+      {
+        title: 'Install updated dependencies',
+        enabled: () => options.install && !reportsOnly,
+        task: async () => {
+          installDependencies()
+        },
+      },
+      {
+        title: 'Final Reports',
+        task: async (ctx, task) => {
+          if (!reportsOnly) {
+            const finalReports = await displayFinalReports(ctx.selectedPackages)
+            const reports = await bundleReports(
+              ctx.selectedPackages,
+              ctx.reportDir,
+            )
+            task.title = reports
+            task.output = finalReports
+          } else {
+            const finalReports = await displayFinalReports(ctx.includedPackages)
+            const reports = await bundleReports(
+              ctx.includedPackages,
+              ctx.reportDir,
+            )
+            task.title = reports
+            task.output = finalReports
+          }
+        },
+        rendererOptions: { bottomBar: 999, persistentOutput: true },
+      },
+    ],
+    {
+      collectErrors: 'full',
+      concurrent: false,
+      exitOnError: true,
+      prompt: new ListrInquirerPromptAdapter(),
+      rendererOptions: {
+        collapseSubtasks: false,
+        collapseSkips: false,
+        collapseErrors: false,
+        timestamp: PRESET_TIMESTAMP,
+        timer: {
+          ...PRESET_TIMER,
+          condition: (duration) => duration > 250,
+          format: (duration) => {
+            return duration > 10000 ? color.red : color.green
+          },
+        },
+      },
+    },
+  )
 
   try {
-    // Step 1: Prompt user for a custom directory
-    const useCustomDir = await promptUserForDirectory()
-    const reportDir = useCustomDir
-      ? path.resolve('update_reports')
-      : process.cwd()
-
-    if (useCustomDir && !fs.existsSync(reportDir)) {
-      fs.mkdirSync(reportDir, { recursive: true })
-      logger.info(`Created directory: ${reportDir}`)
-    }
-    logger.info('Reports will be saved in the current working directory.')
-    logger.separator()
-
-    // Step 2: Fetch outdated dependencies and validate metadata
-    logger.heading('Initiating: Evaluating outdated packages.')
-
-    logger.info(`Version Level: [[${level}]] / Level Scope: [[${levelScope}]]`)
-
-    const { includedPackages, excludedPackages } = await processPackageVersions(
-      options.level,
-      options.excludeRepoless,
-      options.levelScope,
-      options.limit,
-    )
-
-    if (_.isEmpty(Object.keys(includedPackages))) {
-      if (_.isEmpty(Object.keys(excludedPackages))) {
-        logger.success('All dependencies are up to date! No updates needed.')
-      } else {
-        logger.warn(
-          'Based on current scope,dependencies require update were excluded, and no packages are eligible for update. Expand your scope or manually update. Check generated report for details',
-        )
-      }
-    }
-
-    logger.success('Outdated Packages Evaluated: Packages found for updating. ')
-
-    // Step 3: Release Notes/Changelog Attempts
-    logger.heading('Fetching: Checking for release notes for valid packages.')
-
-    for (const [index, pkg] of includedPackages.entries()) {
-      const { metadata, packageName } = pkg
-
-      logger.debug(`${packageName} - STARTING RELEASE NOTE CHECK PROCESS`)
-
-      let releaseNotes = null
-      let changelog = null
-
-      if (metadata.releaseNotesCompatible) {
-        releaseNotes = await fetchReleaseNotes({ packageName, metadata })
-        logger.debug(
-          `Release Notes for ${packageName}: ${JSON.stringify(releaseNotes)}`,
-        )
-        includedPackages[index].releaseNotes = releaseNotes
-        includedPackages[index].changelog = null
-      }
-
-      if (_.isEmpty(releaseNotes) && metadata.fallbackACompatible) {
-        logger.fallback(
-          `Attempting changelog fallback for ${packageName}. No Release Notes: ${_.isEmpty(
-            releaseNotes,
-          )}`,
-          JSON.stringify(metadata.dist.tarball),
-        )
-        changelog = await fetchChangelog({ packageName, metadata })
-        includedPackages[index].releaseNotes = null
-        includedPackages[index].changelog = changelog
-      }
-
-      if (!releaseNotes && !changelog && metadata.fallbackBCompatible) {
-        logger.fallback(
-          `Attempting commit based changelog fallback for ${packageName}`,
-          metadata.githubUrl || metadata.fallbackUrl,
-        )
-        changelog = await fetchCommits({ packageName, metadata })
-        logger.success(
-          `Changelog from commits created for ${packageName} - ${changelog}`,
-        )
-        includedPackages[index].releaseNotes = null
-        includedPackages[index].changelog = changelog
-      }
-
-      if (!releaseNotes && !changelog) {
-        includedPackages[index].releaseNotes = null
-        includedPackages[index].changelog = null
-      }
-    }
-
-    logger.success('Note retrieval complete')
-
-    // Step 4: Parse data
-    logger.heading('Analyzing: Parsing and Categorizing retreived logs.')
-
-    for (const [index, pkg] of includedPackages.entries()) {
-      const { importantTerms, categorizedNotes } = await parseIncludedPackage(
-        pkg,
-      )
-
-      logger.debug(
-        `${pkg.packageName} - Important Terms: ${JSON.stringify(
-          importantTerms,
-          null,
-          2,
-        )}`,
-      )
-
-      logger.debug(
-        `${pkg.packageName} - categorizedNotes: ${JSON.stringify(
-          categorizedNotes,
-          null,
-          2,
-        )}`,
-      )
-
-      includedPackages[index].importantTerms = importantTerms
-      includedPackages[index].categorizedNotes = categorizedNotes
-    }
-
-    logger.success('Logs have been read, catgorized and stitched togeher.')
-
-    // for (const [index, pkg] of includedPackages.entries()) {
-    //   logger.info(`${pkg.packageName} - ${JSON.stringify(pkg, null, 2)}`)
-    //   generateReports(pkg)
-    // }
-
-    // REmemberto check if reports syill generate when no included but excluded present.
-    logger.heading('Generating: Converting JSON to Readable report data...')
-
-    for (const [index, pkg] of includedPackages.entries()) {
-      logger.packageReport(pkg)
-    }
-    // consoleSummaryReport(
-    //   includedPackages,
-    //   excludedPackages,
-    //   options.skipped,
-    //   options.summary,
-    // )
-    // markdownUpdateReport(
-    //   includedPackages,
-    //   path.join(reportDir, 'update-report.md'),
-    // )
-    // breakingChangesReport(
-    //   [],
-    //   path.join(reportDir, 'breaking-changes-report.md'),
-    // )
-
-    // Step 5: Write changes (if enabled)
-    if (options.write) {
-      logger.info('Writing changes to package.json...')
-      writeChanges()
-    }
-
-    // Step 6: Install dependencies (if enabled)
-    if (options.install) {
-      logger.info('Installing updated dependencies...')
-      installDependencies()
-    }
-
-    logger.success('Workflow completed successfully.')
-  } catch (error) {
-    logger.error(`An error occurred: ${error.message}`)
+    await tasks.run()
+    logger.success('Workflow completed successfully!')
+  } catch (err) {
+    logger.error(`Workflow failed: ${err.message}`)
   }
 }
 
-main()
+// main().then(() => {
+//   process.exit(0)
+// })
+
+// Step 5: Generate pre-update reports
+// {
+//   title: 'Generate pre-update reports',
+//   task: async (ctx, task) => {
+//     const subTasks = ctx.includedPackages.map((pkg) => ({
+//       title: `Generate report for ${pkg.packageName}`,
+//       skip: () => {
+//         const { releaseNotes, changelog } = pkg
+//         return (!releaseNotes ||
+//           releaseNotes === UNKNOWN ||
+//           releaseNotes === SKIPPED) &&
+//           (!changelog || changelog === UNKNOWN || changelog === SKIPPED)
+//           ? 'No release notes or changelog available, skipping report generation.'
+//           : false
+//       },
+//       task: async () => {
+//         generateReports(pkg)
+//         logger.packageReport(pkg)
+//       },
+//     }))
+
+//     return task.newListr(subTasks, { concurrent: false })
+//   },
+// },

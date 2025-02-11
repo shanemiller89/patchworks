@@ -1,22 +1,54 @@
 import logger from '../reports/logger.js'
 import { execSync } from 'child_process'
-import fs from 'fs'
+import fs from 'fs/promises'
 import path from 'path'
 
 /**
  * Updates the `package.json` file with new dependency versions.
- * @param {Object} filteredPackages - The packages with updated versions.
+ * @param {Object[]} includedPackages - Array of package objects with `packageName` and `metadata`.
+ * @returns {Promise<void>} Resolves when the package.json file has been updated.
  */
-export function writeChanges(filteredPackages) {
+export async function writeChanges(includedPackages) {
   const packageJsonPath = path.resolve('package.json')
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
 
-  Object.entries(filteredPackages).forEach(([pkg, details]) => {
-    packageJson.dependencies[pkg] = `^${details.version}`
-  })
+  try {
+    const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8')
+    const packageJson = JSON.parse(packageJsonContent)
 
-  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
-  logger.success('package.json updated with new versions.')
+    includedPackages.forEach((pkg) => {
+      const { packageName, metadata } = pkg
+      const { latest: version } = metadata
+
+      // Determine the correct section by inspecting the existing package.json
+      let targetSection = null
+
+      if (packageJson.dependencies?.[packageName]) {
+        targetSection = 'dependencies'
+      } else if (packageJson.devDependencies?.[packageName]) {
+        targetSection = 'devDependencies'
+      } else if (packageJson.peerDependencies?.[packageName]) {
+        targetSection = 'peerDependencies'
+      } else if (packageJson.optionalDependencies?.[packageName]) {
+        targetSection = 'optionalDependencies'
+      }
+
+      // Default to `dependencies` if no targetSection is found
+      if (!targetSection) {
+        targetSection = 'dependencies'
+      }
+
+      // Ensure the target section exists and update the package version
+      packageJson[targetSection] = packageJson[targetSection] || {}
+      packageJson[targetSection][packageName] = `^${version}`
+    })
+
+    // Write the updated package.json back to disk
+    await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2))
+    logger.success('package.json updated successfully.')
+  } catch (error) {
+    logger.error(`Could not write to package.json: ${error.message}`)
+    throw error
+  }
 }
 
 /**

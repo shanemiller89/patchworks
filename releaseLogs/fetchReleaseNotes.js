@@ -1,6 +1,7 @@
 // releaseLogs/fetchReleaseNotes.js
 
 import { Octokit } from '@octokit/rest'
+// eslint-disable-next-line lodash/import-scope
 import _ from 'lodash'
 import semver from 'semver'
 import logger from '../reports/logger.js'
@@ -105,7 +106,10 @@ export async function fetchReleaseNotes({ packageName, metadata }) {
     }
 
     // Attempt fallback URL if no release notes were found
-    if (releaseNotes.length === 0 && fallbackUrl) {
+    if (
+      (releaseNotes.length === 0 && fallbackUrl) ||
+      (fallbackUrl && (!githubUrl || githubUrl === 'INVALID'))
+    ) {
       logger.debug(
         `Attempting to fetch release notes from fallback URL for package: ${packageName} - Fallback URL: ${fallbackUrl}`,
       )
@@ -114,8 +118,11 @@ export async function fetchReleaseNotes({ packageName, metadata }) {
       )
       try {
         // Normalize fallback URL to strip trailing paths like /bugs or /issues
-        const baseFallbackUrl = fallbackUrl.replace(/(\/[^\/]+)*$/, '')
-        const fallbackResponse = await fetch(`${baseFallbackUrl}/releases.json`)
+        const fallbackResponse = await fetch(`${fallbackUrl}/releases.json`, {
+          headers: {
+            Accept: 'application/json',
+          },
+        })
 
         if (fallbackResponse.ok) {
           const fallbackData = await fallbackResponse.json()
@@ -139,7 +146,7 @@ export async function fetchReleaseNotes({ packageName, metadata }) {
           }
         } else {
           logger.warn(
-            `Fallback fetch failed with status ${fallbackResponse.status} for URL: ${baseFallbackUrl}/releases.json`,
+            `Fallback fetch failed with status ${fallbackResponse.status} for URL: ${fallbackUrl}/releases.json`,
           )
         }
       } catch (fallbackError) {

@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node ./dist/patchworks.js",
     "test": "echo \"No tests specified\" && exit 1",
-    "build": "babel src --out-dir dist"
+    "build": "babel . --out-dir dist"
   },
   "type": "module",
   "dependencies": {

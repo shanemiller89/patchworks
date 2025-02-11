@@ -27,24 +27,24 @@ Patchworks is a CLI tool designed to streamline version management and change tr
 Run the CLI tool using:
 
 ```bash
-node patchworks.mjs --help
+npx patchworks --help
 ```
 
 ## Example Commands
 
 - To update with a specific level:
   ```bash
-  node patchworks.mjs update minor --limit 10
+  npx patchworks update minor --limit 10
   ```
 
 - To generate a report:
   ```bash
-  node patchworks.mjs reports minor
+  npx patchworks reports minor
   ```
 
-- To display the main menu (Very buggy right now, requires to pass in a level for now):
+- To display the main menu:
   ```bash
-  node patchworks.mjs menu patch
+  npx patchworks menu patch
   ```
 
 ## Commands

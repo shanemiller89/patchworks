@@ -1,6 +1,10 @@
 {
   "name": "patchworks",
   "version": "0.0.01",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shanemiller89/patchworks.git"
+  },
   "description": "A (npm) dependency management tool for detecting updates and breaking changes.",
   "main": "dist/patchworks.js",
   "bin": {

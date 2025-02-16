@@ -6,6 +6,7 @@ import fileSelector from 'inquirer-file-selector'
 import logger from './reports/logger.js'
 import { renderMainMenu } from './menus/mainMenu.js'
 import { readConfig } from './config/configUtil.js'
+import { main } from './tasks/main.js'
 
 // Register inquirer prompts
 inquirer.registerPrompt('file-selector', fileSelector)

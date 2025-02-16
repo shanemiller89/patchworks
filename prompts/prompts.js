@@ -1,4 +1,4 @@
-import { checkbox } from '@inquirer/prompts'
+import { checkbox, select } from '@inquirer/prompts'
 import { ListrInquirerPromptAdapter } from '@listr2/prompt-adapter-inquirer'
 import inquirer from 'inquirer'
 import fileSelector from 'inquirer-file-selector'
@@ -26,6 +26,44 @@ export async function askToContinue(task, message = 'Do you want to proceed?') {
     return answer
   } catch (error) {
     logger.error(`An error occurred during the toggle prompt: ${error.message}`)
+    throw error
+  }
+}
+
+export async function promptUserForLevel() {
+  try {
+    const { level } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'level',
+        message: 'Select the maximum update level:',
+        choices: [
+          {
+            name: `${styles.patch(
+              'Patch (x.x.1)',
+            )} - Bug fixes and minor updates`,
+            value: 'patch',
+          },
+          {
+            name: `${styles.minor(
+              'Minor (x.1.x)',
+            )} - New features (backwards compatible)`,
+            value: 'minor',
+          },
+          {
+            name: `${styles.major(
+              'Major (1.x.x)',
+            )} - High potential for Breaking changes`,
+            value: 'major',
+          },
+        ],
+      },
+    ])
+
+    console.log(`Selected update level: ${level}`)
+    return level
+  } catch (error) {
+    console.error(`An error occurred during level selection: ${error.message}`)
     throw error
   }
 }

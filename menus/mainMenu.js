@@ -8,6 +8,7 @@ import { align, centerAlign } from '../utils/alignmentHelpers.js'
 import { generateConfig, readConfig } from '../config/configUtil.js'
 import { MAIN_TITLE } from '../utils/constants.js'
 import readline from 'readline'
+import { promptUserForLevel } from '../prompts/prompts.js'
 
 const DOUBLE_LINE =
   '======================================================================================================================'
@@ -174,9 +175,8 @@ ${chalk.blue(DOUBLE_LINE)}
     console.log(chalk.blue('Use ↑ ↓ keys to navigate, press Enter to select.'))
   }
 
-  renderMenu()
-
-  process.stdin.on('keypress', async (str, key) => {
+  // Define the keypress handler function
+  const keypressHandler = async (str, key) => {
     if (key.name === 'up') {
       selectedIndex = (selectedIndex - 1 + 7) % 7
     } else if (key.name === 'down') {
@@ -185,22 +185,45 @@ ${chalk.blue(DOUBLE_LINE)}
       switch (selectedIndex) {
         case 0:
           console.log('Running Patchworks Main...')
-          await main({
-            level,
+          let runLevel = level
+          if (!level) {
+            // Temporarily disable raw mode and keypress events
+            process.stdin.setRawMode(false)
+            process.stdin.removeAllListeners('keypress')
+
+            runLevel = await promptUserForLevel()
+
+            // Restore raw mode and keypress events
+            if (process.stdin.isTTY) process.stdin.setRawMode(true)
+            readline.emitKeypressEvents(process.stdin)
+            process.stdin.on('keypress', keypressHandler)
+          }
+          // Clean up event listeners and stdin before running main
+          process.stdin.removeAllListeners('keypress')
+          if (process.stdin.isTTY) process.stdin.setRawMode(false)
+          rl.close()
+
+          return await main({
+            level: runLevel,
             limit,
             levelScope,
             summary,
             showExcluded,
             installUpdates,
+          }).then(() => {
+            process.exit(0)
           })
-          break
         case 1:
           console.log('Running Patchworks Main All...')
-          await main({ level: 'major', levelScope: 'cascade' })
-          break
+          // Clean up event listeners and stdin
+          process.stdin.removeAllListeners('keypress')
+          if (process.stdin.isTTY) process.stdin.setRawMode(false)
+          rl.close()
+
+          return await main({ level: 'major', levelScope: 'cascade' })
         case 2:
           console.log('Generating Reports Only...')
-          await main({
+          return await main({
             reportsOnly: true,
             level,
             limit,
@@ -208,20 +231,25 @@ ${chalk.blue(DOUBLE_LINE)}
             summary,
             showExcluded,
             installUpdates,
+          }).then(() => {
+            process.exit(0)
           })
-          break
         case 3:
           console.log('Generating Reports All...')
-          await main({
+          return await main({
             reportsOnly: true,
             level: 'major',
             levelScope: 'cascade',
             showExcluded: true,
+          }).then(() => {
+            process.exit(0)
           })
-          break
         case 4:
           console.log('Generating Config...')
-          await generateConfig()
+          await generateConfig().then(() => {
+            process.exit(0)
+          })
+          console.log('Config generated successfully!')
           break
         case 5:
           console.log('Displaying Help and Documentation...')
@@ -236,5 +264,9 @@ ${chalk.blue(DOUBLE_LINE)}
       }
     }
     renderMenu()
-  })
+  }
+
+  // Initial setup of keypress handler
+  process.stdin.on('keypress', keypressHandler)
+  renderMenu()
 }

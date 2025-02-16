@@ -17,6 +17,8 @@ Patchworks is a CLI tool designed to streamline version management and change tr
 - Computes TF-IDF rankings for important terms in release notes.
 - Provides a user-friendly command-line interface for managing updates.
 
+![Patchworks Menu](https://github.com/shanemiller89/patchworks/blob/main/assets/patchworks_menu.png)
+
 ## Installation
 
 1. Clone this repository.

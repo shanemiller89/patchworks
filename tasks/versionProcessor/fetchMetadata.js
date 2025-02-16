@@ -1,7 +1,5 @@
-// utils/npmRegistryFetcher.js
-
 import registryFetch from 'npm-registry-fetch'
-import logger from '../reports/logger.js'
+import logger from '../../reports/logger.js'
 
 export async function fetchPackageMetadata(packageName, version) {
   try {

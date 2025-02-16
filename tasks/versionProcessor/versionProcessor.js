@@ -3,16 +3,15 @@
 // eslint-disable-next-line lodash/import-scope
 import _ from 'lodash'
 import semver from 'semver'
-import { askToContinue } from '../prompts/prompts.js'
+import { askToContinue } from '../../prompts/prompts.js'
 import {
   displayExcludedPackages,
   displayIncludedPackages,
-} from '../reports/consoleTaskReports.js'
-import logger from '../reports/logger.js'
-import { styles } from '../reports/styles.js'
-import { UNKNOWN } from './constants.js'
+} from '../../reports/consoleTaskReports.js'
+import logger from '../../reports/logger.js'
+import { styles } from '../../reports/styles.js'
+import { UNKNOWN } from '../../utils/constants.js'
 import { processPackagesMetadata } from './fetchMetadata.js'
-// import { fetchNpmMetadata } from './npmMetaData.js' // Metadata already validated
 import { exec } from 'child_process'
 
 /**

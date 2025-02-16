@@ -1,4 +1,4 @@
-# Patchworks (Alpha)
+# Patchworks (0.0.02-Alpha)
 
 ## Overview
 Patchworks is a CLI tool designed to streamline version management and change tracking in software projects. This alpha version demonstrates its core functionalities.
@@ -29,6 +29,12 @@ Run the CLI tool using:
 ```bash
 npx patchworks --help
 ```
+or
+
+```bash
+npx patchworks help [command]
+```
+
 
 ## Example Commands
 
@@ -44,18 +50,22 @@ npx patchworks --help
 
 - To display the main menu:
   ```bash
-  npx patchworks menu patch
+  npx patchworks menu
   ```
 
 ## Commands
 
 - **update**: Run the main update program with options.
-  - Required: `--level <level>` (Specify the update level: patch, minor, major).
-  - Optional: `--limit <number>`, `--level-scope <scope>`, `--summary`, `--skipped`, `--write`, `--install`, `--exclude-repoless`, `--show-excluded`.
+  - Required Argument: `<level> <patch, minor, major>` (Specify the update level: patch, minor, major).
+  - Optional Options: `--limit <number>`, `--level-scope <scope>`, `--summary`, `--skipped`, `--install`, `--exclude-repoless`, `--show-excluded`.
 
 - **reports**: Generate reports based on the current state of dependencies.
+  - Required Argument: `<level> <patch, minor, major>` (Specify the update level: patch, minor, major).
+  - Optional Options: `--limit <number>`, `--level-scope <scope>`, `--summary`, `--skipped`, `--exclude-repoless`, `--show-excluded`.
 
 - **menu**: Display the main menu for navigating the tool.
+  - Optional Argument: `[level] <patch, minor, major>` (Specify the update level: patch, minor, major).
+  - Optional Options: `--limit <number>`, `--level-scope <scope>`, `--summary`, `--skipped`, `--install`, `--exclude-repoless`, `--show-excluded`.
 
 ## Notes
 - This is an alpha release intended for internal testing and development.

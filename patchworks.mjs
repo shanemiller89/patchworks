@@ -10,19 +10,22 @@ import { readConfig } from './config/configUtil.js'
 // Register inquirer prompts
 inquirer.registerPrompt('file-selector', fileSelector)
 
-// Set up Commander.js
-const program = new Command()
+function createLevelArg(options = { menu: false }) {
+  const { menu = false } = options
+  if (menu) {
+    return new Argument(
+      '[level]',
+      'Specify the update level (patch, minor, major)',
+      (value) => {
+        if (value && !['patch', 'minor', 'major'].includes(value)) {
+          throw new Error('Level must be one of: patch, minor, major')
+        }
+        return value
+      },
+    )
+  }
 
-program
-  .name('patchworks')
-  .description(
-    'Patchworks CLI: A utility for managing dependency updates efficiently.',
-  )
-  .usage('[command] [options]')
-  .version('0.0.1')
-
-const sharedArgs = [
-  new Argument(
+  return new Argument(
     '<level>',
     'Specify the update level (patch, minor, major)',
     (value) => {
@@ -31,8 +34,8 @@ const sharedArgs = [
       }
       return value
     },
-  ),
-]
+  )
+}
 
 const sharedOptions = [
   new Option(
@@ -73,11 +76,22 @@ const sharedOptions = [
   new Option('-i, --install', 'Install dependencies after processing', false),
 ]
 
+// Set up Commander.js
+const program = new Command()
+
+program
+  .name('patchworks')
+  .description(
+    'Patchworks CLI: A utility for managing dependency updates efficiently.',
+  )
+  .usage('[command] [options]')
+  .version('0.0.02')
+
 // Default command to show the main menu
 program
   .command('menu')
   .description('Display the main menu')
-  .addArgument(sharedArgs[0])
+  .addArgument(createLevelArg({ menu: true }))
   .addOption(sharedOptions[0])
   .addOption(sharedOptions[1])
   .addOption(sharedOptions[2])
@@ -90,7 +104,7 @@ program
     const config = (await readConfig()) || {}
 
     const finalOptions = {
-      level: level || config.level || 'minor',
+      level: level || config.level || null,
       limit: options.limit || config.limit || null,
       levelScope: options.levelScope || config.levelScope || 'strict',
       summary: options.summary || config.summary || false,
@@ -115,7 +129,7 @@ program
 program
   .command('reports')
   .description('Run a report-only workflow')
-  .addArgument(sharedArgs[0])
+  .addArgument(createLevelArg())
   .addOption(sharedOptions[0])
   .addOption(sharedOptions[1])
   .addOption(sharedOptions[2])
@@ -153,7 +167,7 @@ program
 program
   .command('update')
   .description('Run the main update program with options')
-  .addArgument(sharedArgs[0])
+  .addArgument(createLevelArg())
   .addOption(sharedOptions[0])
   .addOption(sharedOptions[1])
   .addOption(sharedOptions[2])

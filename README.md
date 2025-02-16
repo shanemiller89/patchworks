@@ -1,8 +1,10 @@
 # Patchworks (0.0.02-Alpha)
 
-<p align="center">
-  <img src="assets/patchworks.png" alt="Patchworks Logo"/>
-</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/patchworks.png">
+  <source media="(prefers-color-scheme: light)" srcset="assets/patchworks.png">
+  <img width="100%" alt="Patchworks Logo" src="assets/patchworks.png">
+</picture>
 
 
 ## Overview

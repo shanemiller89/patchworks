@@ -1,11 +1,6 @@
 # Patchworks (0.0.02-Alpha)
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/patchworks.png">
-  <source media="(prefers-color-scheme: light)" srcset="assets/patchworks.png">
-  <img width="100%" alt="Patchworks Logo" src="assets/patchworks.png">
-</picture>
-
+![Patchworks Logo](https://github.com/shanemiller89/patchworks/blob/main/assets/patchworks_title.png)
 
 ## Overview
 Patchworks is a CLI tool designed to streamline version management and change tracking in software projects. This alpha version demonstrates its core functionalities.

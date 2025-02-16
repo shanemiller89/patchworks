@@ -1,4 +1,4 @@
-// releaseLogs/fetchChangelog.js
+// versionLogs/fetchChangelog.js
 
 import axios from 'axios'
 // eslint-disable-next-line lodash/import-scope

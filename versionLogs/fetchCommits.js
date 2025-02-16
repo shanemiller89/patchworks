@@ -1,4 +1,4 @@
-// releaseLogs/fetchCommits.js
+// versionLogs/fetchCommits.js
 
 import { Octokit } from '@octokit/rest'
 import { CommitParser } from 'conventional-commits-parser'

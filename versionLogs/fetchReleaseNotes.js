@@ -1,4 +1,4 @@
-// releaseLogs/fetchReleaseNotes.js
+// versionLogs/fetchReleaseNotes.js
 
 import { Octokit } from '@octokit/rest'
 // eslint-disable-next-line lodash/import-scope

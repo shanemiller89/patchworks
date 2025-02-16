@@ -4,7 +4,6 @@ import { getBorderCharacters, table } from 'table'
 import { displayHelpMenu } from './helpMenu.js'
 import { main } from '../tasks/main.js'
 import { styles } from '../reports/styles.js'
-import { align, centerAlign } from '../utils/alignmentHelpers.js'
 import { generateConfig, readConfig } from '../config/configUtil.js'
 import { MAIN_TITLE } from '../utils/constants.js'
 import readline from 'readline'
@@ -42,7 +41,7 @@ export async function renderMainMenu(options) {
   const renderMenu = () => {
     console.clear()
     console.log(
-      boxen(chalk.blue.bold(align(MAIN_TITLE, centerAlign)), {
+      boxen(chalk.blue.bold(MAIN_TITLE), {
         title: chalk.blue(
           'Stitching Your Changelog Chaos into Seamless Updates.',
         ),
@@ -172,7 +171,15 @@ ${chalk.blue(DOUBLE_LINE)}
 
     console.log(menuGrid)
     console.log(chalk.blue(DOUBLE_LINE))
-    console.log(chalk.blue('Use ↑ ↓ keys to navigate, press Enter to select.'))
+    console.log(
+      chalk.blue(
+        `Use ${chalk.bold.blueBright(
+          '↑ ↓',
+        )} keys to navigate, press ${chalk.bold.blueBright(
+          'Enter',
+        )} to select.`,
+      ),
+    )
   }
 
   // Define the keypress handler function

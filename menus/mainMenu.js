@@ -59,9 +59,9 @@ export async function renderMainMenu(options) {
 ${chalk.blue(DOUBLE_LINE)}
   ${chalk.bold.blue.italic('Patchworks Configuration')}
 ${chalk.blue(DOUBLE_LINE)}
-  ${chalk.white('★')} ${chalk.gray.bold(
-      'Update Level:',
-    )}               ${chalk.greenBright(level)}
+  ${chalk.white('★')} ${chalk.gray.bold('Update Level:')}               ${
+      !level ? chalk.redBright('Not Set') : chalk.greenBright(level)
+    }
   ${chalk.white('♯')} ${chalk.gray.bold(
       'Max Updates:',
     )}                ${chalk.greenBright(limit || 'Infinite')}

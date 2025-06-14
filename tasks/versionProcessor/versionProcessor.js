@@ -266,7 +266,7 @@ function fetchOutdated(task, options) {
               patch: 1,
               minor: 2,
               major: 3,
-              preRelease: 4,
+              'pre-release': 4,
               unknown: 5,
             }
             const aType = categorizeVersionJump(a.current, a.latest)

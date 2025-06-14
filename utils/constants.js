@@ -7,7 +7,7 @@ export const MAIN_TITLE = `
 ╚═╝     ╚═╝  ╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝ ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝
 `
 
-export const UNKNOWN = 'UNKOWN'
+export const UNKNOWN = 'UNKNOWN'
 
 export const SKIPPED = 'SKIPPED'
 

@@ -185,7 +185,7 @@ export async function processPackagesMetadata(packages) {
           results.valid[pkg] = { ...info, ...metadata }
         } else {
           results.invalid[pkg] = {
-            valiationStatus: 'FAILED VALIDATION',
+            validationStatus: 'FAILED VALIDATION',
             ...info,
             ...metadata,
           }

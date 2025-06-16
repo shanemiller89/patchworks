@@ -514,6 +514,35 @@ function categorizeSentence(sentence, section) {
     bestMatch = { category: tagCategory, confidence: 0.8 }
   }
 
+  // Pass 1.5: Check section context for strong indicators
+  // Use sectionDoc to analyze the section header
+  const sectionCategory = sectionDoc.detectCategory()
+  if (sectionCategory && !tagCategory) {
+    // If section strongly indicates a category but sentence doesn't
+    bestMatch = { category: sectionCategory, confidence: 0.4 }
+  } else if (sectionCategory && sectionCategory === tagCategory) {
+    // Both section and sentence indicate same category - boost confidence
+    bestMatch.confidence = Math.min(bestMatch.confidence + 0.2, 1.0)
+  }
+
+  // Check if section contains strong category indicators
+  Object.entries(categoryPatterns).forEach(([category, patterns]) => {
+    // Test section header against high-confidence patterns
+    if (patterns.high) {
+      const sectionNormalized = sectionDoc.normalize().text()
+      patterns.high.forEach((pattern) => {
+        if (pattern.test(sectionNormalized)) {
+          // Section header strongly indicates this category
+          if (bestMatch.category === category) {
+            bestMatch.confidence = Math.min(bestMatch.confidence + 0.15, 1.0)
+          } else if (!bestMatch.category) {
+            bestMatch = { category, confidence: 0.35 }
+          }
+        }
+      })
+    }
+  })
+
   // Pass 2: Pattern-based detection with scoring
   Object.entries(categoryPatterns).forEach(([category, patterns]) => {
     let categoryScore = 0
@@ -545,8 +574,11 @@ function categorizeSentence(sentence, section) {
       })
     }
 
-    // Section context bonus
-    if (sectionMatchesCategory(section, category)) {
+    // Section context bonus using both the section text and sectionDoc analysis
+    if (
+      sectionMatchesCategory(section, category) ||
+      sectionDoc.has(`#${category.charAt(0).toUpperCase() + category.slice(1)}`)
+    ) {
       categoryScore += 3
     }
 

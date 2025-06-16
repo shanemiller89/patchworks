@@ -24,7 +24,7 @@ export async function renderMainMenu(options) {
     levelScope = options.levelScope || config.levelScope || 'strict',
     summary = options.summary || config.summary || false,
     showExcluded = options.showExcluded || config.showExcluded || false,
-    installUpdates = options.install || config.install || true,
+    install = options.install || config.install || true,
   } = options
 
   let selectedIndex = 0
@@ -75,8 +75,8 @@ ${chalk.blue(SINGLE_LINE)}
   ${chalk.white('☒')} ${chalk.gray.bold('Show Excluded:')}              ${
       showExcluded ? chalk.green('Enabled') : chalk.red('Disabled')
     }
-  ${chalk.white('♨')} ${chalk.gray.bold('Install Updates:')}            ${
-      installUpdates ? chalk.green('Enabled') : chalk.red('Disabled')
+  ${chalk.white('♨')} ${chalk.gray.bold('Install Dependencies:')}            ${
+      install ? chalk.green('Enabled') : chalk.red('Disabled')
     }
 ${chalk.blue(DOUBLE_LINE)}
   `
@@ -216,7 +216,7 @@ ${chalk.blue(DOUBLE_LINE)}
             levelScope,
             summary,
             showExcluded,
-            installUpdates,
+              install,
           }).then(() => {
             process.exit(0)
           })
@@ -237,7 +237,7 @@ ${chalk.blue(DOUBLE_LINE)}
             levelScope,
             summary,
             showExcluded,
-            installUpdates,
+              install,
           }).then(() => {
             process.exit(0)
           })

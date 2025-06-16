@@ -21,25 +21,64 @@ Patchworks is a CLI tool designed to streamline version management and change tr
 
 ## Installation
 
-1. Clone this repository.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Requires Node.js 14 or higher.
+### Global Installation (Recommended)
+Install Patchworks globally to use it from any directory:
+```bash
+npm install -g patchworks
+```
+
+### Local Installation
+Install Patchworks in your project:
+```bash
+npm install patchworks
+```
+
+### Development Installation
+For development or testing:
+```bash
+git clone https://github.com/shanemiller89/patchworks.git
+cd patchworks
+npm install
+npm link  # Creates a global symlink for development
+```
+
+### Requirements
+- Node.js 14 or higher
+- npm 6 or higher
+
+### Troubleshooting
+
+#### Node.js Version Managers
+If you're using a Node.js version manager (like nvm, asdf, or n), you might need additional steps:
+
+- **asdf**: After installation, run `asdf reshim nodejs`
+- **nvm**: No additional steps needed
+- **n**: No additional steps needed
+
+If the `patchworks` command is not found after installation:
+1. Verify the installation: `npm list -g patchworks`
+2. Check your PATH: `echo $PATH`
+3. Try reinstalling: `npm uninstall -g patchworks && npm install -g patchworks`
 
 ## Usage
-Run the CLI tool using:
 
+### Global Installation
+If installed globally, use the command directly:
+```bash
+patchworks --help
+```
+
+### Local Installation
+If installed locally, use npx:
 ```bash
 npx patchworks --help
 ```
-or
 
+### Available Commands
+Get help on any command:
 ```bash
-npx patchworks help [command]
+patchworks help [command]
 ```
-
 
 ## Example Commands
 
@@ -80,7 +119,8 @@ npx patchworks help [command]
 
 ## Notes
 - This is an alpha release intended for internal testing and development.
-- Feedback and bug reports welcome
+- Feedback and bug reports are welcome via GitHub issues
+- For installation issues, please check the troubleshooting section above
 
 ## License
 MIT License

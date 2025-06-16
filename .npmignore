@@ -1,0 +1,31 @@
+# Development files
+.DS_Store
+__MACOSX/
+*.log
+.env
+.tool-versions
+.tools
+
+# Test and development configuration
+jest.config.js
+.babelrc
+.eslintrc.json
+
+# Development scripts and configs that shouldn't be published
+patchworks.mjs
+patchworks-config.json
+
+# Documentation and repository files (keep README.md and LICENSE)
+.github/
+*.md
+!README.md
+
+# Test files and coverage
+src/__tests__/
+coverage/
+*.test.js
+*.spec.js
+
+# Build artifacts that shouldn't be published
+dist/
+build/

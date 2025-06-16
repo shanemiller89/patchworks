@@ -5,20 +5,20 @@
  * Entry point for the command line interface
  */
 
-import semver from 'semver';
-import cli from '../src/cli/index.js';
+import semver from 'semver'
+import cli from '../src/cli/index.js'
 
-const currentNodeVersion = process.versions.node;
+const currentNodeVersion = process.versions.node
 if (!semver.gte(currentNodeVersion, '14.0.0')) {
   console.error(
-    `Patchworks requires Node.js 14.0.0 or higher. You are running ${currentNodeVersion}.`
-  );
-  process.exit(1);
+    `Patchworks requires Node.js 14.0.0 or higher. You are running ${currentNodeVersion}.`,
+  )
+  process.exit(1)
 }
 
 process.on('unhandledRejection', (err) => {
-  console.error('Unhandled promise rejection:', err);
-  process.exit(1);
-});
+  console.error('Unhandled promise rejection:', err)
+  process.exit(1)
+})
 
-cli();
+cli()

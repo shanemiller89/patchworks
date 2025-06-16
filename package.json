@@ -1,35 +1,68 @@
 {
   "name": "patchworks",
-  "version": "0.0.02",
+  "version": "0.1.0",
+  "description": "A CLI tool to manage dependency updates by semantic versioning, breaking change detection, and batch selection for efficient prioritization",
+  "main": "src/index.js",
+  "bin": {
+    "patchworks": "./bin/patchworks.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
+    "format": "prettier --write \"src/**/*.js\"",
+    "prepublishOnly": "npm run lint && npm test",
+    "prepare": "npm run build --if-present",
+    "local:install": "npm link",
+    "local:uninstall": "npm unlink"
+  },
+  "keywords": [
+    "cli",
+    "dependency-management",
+    "semantic-versioning",
+    "breaking-changes",
+    "npm",
+    "package-management",
+    "release-notes",
+    "github"
+  ],
+  "author": "Shane Miller <your-email@example.com>",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shanemiller89/patchworks.git"
+    "url": "git+https://github.com/shanemiller89/patchworks.git"
   },
-  "description": "A (npm) dependency management tool for detecting updates and breaking changes.",
-  "main": "dist/patchworks.js",
-  "bin": {
-    "patchworks": "./dist/patchworks.js"
+  "bugs": {
+    "url": "https://github.com/shanemiller89/patchworks/issues"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
-  "scripts": {
-    "start": "node ./dist/patchworks.js",
-    "test": "echo \"No tests specified\" && exit 1",
-    "build": "babel . --out-dir dist --ignore node_modules"
+  "homepage": "https://github.com/shanemiller89/patchworks#readme",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
   },
   "type": "module",
   "dependencies": {
+    "chalk": "^5.0.0",
+    "commander": "^13.0.0",
+    "semver": "^7.3.8",
+    "axios": "^1.7.9",
+    "ora": "^5.4.1",
+    "marked": "^4.2.0",
     "@inquirer/prompts": "^7.3.2",
     "@listr2/prompt-adapter-inquirer": "^2.0.18",
     "@octokit/rest": "^21.1.1",
     "align-text": "^1.0.2",
-    "axios": "^1.7.9",
     "boxen": "^8.0.1",
-    "chalk": "^5.0.0",
     "check-types": "^11.2.3",
     "cheerio": "^1.0.0",
-    "commander": "^13.0.0",
     "compromise": "^14.14.3",
     "conventional-commits-parser": "^6.1.0",
     "inquirer": "^12.4.2",
@@ -45,16 +78,12 @@
     "tar-stream": "^3.1.7",
     "tiny-tfidf": "^0.9.1"
   },
-  "keywords": [
-    "dependency-management",
-    "version-updates",
-    "breaking-changes"
-  ],
-  "author": "Everyone",
-  "license": "MIT",
   "devDependencies": {
     "@babel/cli": "^7.26.4",
     "@babel/core": "^7.26.9",
-    "@babel/preset-env": "^7.26.9"
+    "@babel/preset-env": "^7.26.9",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "prettier": "^2.8.0"
   }
 }

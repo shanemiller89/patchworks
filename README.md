@@ -1,4 +1,4 @@
-# Patchworks (0.0.02-Alpha)
+# Patchworks (0.0.02)
 
 ![Patchworks Logo](https://github.com/shanemiller89/patchworks/blob/main/assets/patchworks_title.png)
 

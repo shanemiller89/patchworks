@@ -1,4 +1,4 @@
-# Patchworks (0.0.02)
+# Patchworks (0.1.0)
 
 ![Patchworks Logo](https://github.com/shanemiller89/patchworks/blob/main/assets/patchworks_title.png)
 
@@ -26,6 +26,7 @@ Patchworks is a CLI tool designed to streamline version management and change tr
    ```bash
    npm install
    ```
+3. Requires Node.js 14 or higher.
 
 ## Usage
 Run the CLI tool using:
@@ -56,6 +57,12 @@ npx patchworks help [command]
   ```bash
   npx patchworks menu
   ```
+- To generate a default configuration file:
+  1. Run the main menu command:
+     ```bash
+     npx patchworks menu
+     ```
+  2. Choose **Generate Config** to create `patchworks-config.json` in your project.
 
 ## Commands
 

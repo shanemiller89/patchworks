@@ -87,7 +87,7 @@ export default function () {
       'Patchworks CLI: A utility for managing dependency updates efficiently.',
     )
     .usage('[command] [options]')
-    .version('0.0.02')
+    .version('0.1.0')
 
   // Default command to show the main menu
   program

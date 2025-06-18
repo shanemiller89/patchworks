@@ -45,7 +45,6 @@ export function formatSeparator(length = 40, symbol = '=', color = chalk.gray) {
   return color(symbol.repeat(length))
 }
 
-// TODO: evaluate need
 /**
  * Formats a message with a specific log level and style.
  * @param {string} level - The log level (e.g., [INFO], [ERROR]).

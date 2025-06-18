@@ -1,0 +1,48 @@
+name: Publish to NPM
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Run linter
+      run: npm run lint
+      
+    - name: Run pre-publish checks
+      run: ./scripts/pre-publish.sh
+      
+    - name: Publish to NPM
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
+    - name: Verify publication
+      run: |
+        # Wait a moment for NPM to process
+        sleep 10
+        # Check if package is available
+        npm view patchworks version
+        
+    - name: Create deployment status
+      run: |
+        echo "✅ Successfully published patchworks@$(node -p 'require("./package.json").version') to NPM"
+        echo "📦 Package URL: https://www.npmjs.com/package/patchworks" 

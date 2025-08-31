@@ -1,5 +1,4 @@
 import boxen from 'boxen'
-// eslint-disable-next-line lodash/import-scope
 import _ from 'lodash'
 import { MAIN_TITLE } from '../utils/constants.js'
 import { mainTitleOptions, packageReportOptions, styles } from './styles.js'
@@ -268,18 +267,6 @@ export function skipping({ limit, updateDifficulty }) {
       )
     }
   }
-  // if (Object.keys(metadata).length) {
-  //   console.log(
-  //     `    ${styles.neutral('[METADATA]')} Details:\n    ${JSON.stringify(
-  //       metadata,
-  //       null,
-  //       2,
-  //     )
-  //       .split('\n')
-  //       .map((line) => `    ${line}`)
-  //       .join('\n')}`,
-  //   )
-  // }
 }
 
 /**
@@ -302,18 +289,6 @@ export function evaluating({ limit, updateDifficulty }) {
       )
     }
   }
-  // if (Object.keys(metadata).length) {
-  //   console.log(
-  //     `    ${styles.neutral('[METADATA]')} Details:\n    ${JSON.stringify(
-  //       metadata,
-  //       null,
-  //       2,
-  //     )
-  //       .split('\n')
-  //       .map((line) => `    ${line}`)
-  //       .join('\n')}`,
-  //   )
-  // }
 }
 
 /**

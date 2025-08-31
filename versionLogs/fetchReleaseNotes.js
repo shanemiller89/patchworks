@@ -1,7 +1,6 @@
 // versionLogs/fetchReleaseNotes.js
 
 import { Octokit } from '@octokit/rest'
-// eslint-disable-next-line lodash/import-scope
 import _ from 'lodash'
 import semver from 'semver'
 import logger from '../reports/logger.js'

@@ -1,7 +1,6 @@
 // versionLogs/fetchChangelog.js
 
 import axios from 'axios'
-// eslint-disable-next-line lodash/import-scope
 import tar from 'tar-stream'
 import logger from '../reports/logger.js'
 import { gunzipSync } from 'zlib'

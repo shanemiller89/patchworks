@@ -1,7 +1,6 @@
-// analyze/logDataAnalyze.js
+// analysis/analyzeLogData.js
 
 import * as cheerio from 'cheerio'
-// eslint-disable-next-line lodash/import-scope
 import _ from 'lodash'
 import MarkdownIt from 'markdown-it'
 import markdownItContainer from 'markdown-it-container'

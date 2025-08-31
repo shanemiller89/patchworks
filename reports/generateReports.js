@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import logger from './logger.js'
 import fs from 'fs'
-import fsPromises from 'fs/promises'
 import { UNKNOWN } from '../utils/constants.js'
 import { ALL } from '../utils/constants.js'
 import tar from 'tar-stream'

@@ -1,8 +1,7 @@
-import { checkbox, select } from '@inquirer/prompts'
+import { checkbox } from '@inquirer/prompts'
 import { ListrInquirerPromptAdapter } from '@listr2/prompt-adapter-inquirer'
 import inquirer from 'inquirer'
 import fileSelector from 'inquirer-file-selector'
-// eslint-disable-next-line lodash/import-scope
 import _ from 'lodash'
 import { customTogglePrompt } from '../prompts/baseToggle.js'
 import logger, { summarizeCategorizedNotes } from '../reports/logger.js'

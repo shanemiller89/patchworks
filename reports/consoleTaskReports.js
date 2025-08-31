@@ -9,7 +9,6 @@ import {
   useState,
 } from '@inquirer/core'
 import chalk from 'chalk'
-// eslint-disable-next-line lodash/import-scope
 import _ from 'lodash'
 import { SKIPPED, UNKNOWN } from '../utils/constants.js'
 import { TableGenerator } from '../utils/TableGenerator.js'

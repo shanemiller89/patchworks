@@ -267,32 +267,3 @@ export async function main(options) {
     logger.error(`Workflow failed: ${err.message}`)
   }
 }
-
-// main().then(() => {
-//   process.exit(0)
-// })
-
-// Step 5: Generate pre-update reports
-// {
-//   title: 'Generate pre-update reports',
-//   task: async (ctx, task) => {
-//     const subTasks = ctx.includedPackages.map((pkg) => ({
-//       title: `Generate report for ${pkg.packageName}`,
-//       skip: () => {
-//         const { releaseNotes, changelog } = pkg
-//         return (!releaseNotes ||
-//           releaseNotes === UNKNOWN ||
-//           releaseNotes === SKIPPED) &&
-//           (!changelog || changelog === UNKNOWN || changelog === SKIPPED)
-//           ? 'No release notes or changelog available, skipping report generation.'
-//           : false
-//       },
-//       task: async () => {
-//         generateReports(pkg)
-//         logger.packageReport(pkg)
-//       },
-//     }))
-
-//     return task.newListr(subTasks, { concurrent: false })
-//   },
-// },

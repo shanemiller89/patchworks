@@ -1,6 +1,5 @@
-// utils/versionProcessor.js
+// tasks/versionProcessor/versionProcessor.js
 
-// eslint-disable-next-line lodash/import-scope
 import _ from 'lodash'
 import semver from 'semver'
 import { askToContinue } from '../../prompts/prompts.js'

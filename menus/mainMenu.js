@@ -190,7 +190,7 @@ ${chalk.blue(DOUBLE_LINE)}
       selectedIndex = (selectedIndex + 1) % 7
     } else if (key.name === 'return') {
       switch (selectedIndex) {
-        case 0:
+        case 0: {
           console.log('Running Patchworks Main...')
           let runLevel = level
           if (!level) {
@@ -216,10 +216,11 @@ ${chalk.blue(DOUBLE_LINE)}
             levelScope,
             summary,
             showExcluded,
-              install,
+            install,
           }).then(() => {
             process.exit(0)
           })
+        }
         case 1:
           console.log('Running Patchworks Main All...')
           // Clean up event listeners and stdin
@@ -237,7 +238,7 @@ ${chalk.blue(DOUBLE_LINE)}
             levelScope,
             summary,
             showExcluded,
-              install,
+            install,
           }).then(() => {
             process.exit(0)
           })

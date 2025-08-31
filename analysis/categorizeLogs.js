@@ -1,4 +1,4 @@
-// analyze/categorizeLogs.js
+// analysis/categorizeLogs.js
 
 import nlp from 'compromise'
 import logger from '../reports/logger.js'
@@ -426,7 +426,7 @@ const categoryPatterns = {
       /handle[ds]?\s+\w+\s+correctly/i,
       /prevent[ds]?\s+\w+\s+error/i,
     ],
-    low: [/regression\s+fix/i, /bug\s*fix/i, /issue\s+\#\d+/i],
+    low: [/regression\s+fix/i, /bug\s*fix/i, /issue\s+#\d+/i],
   },
 }
 

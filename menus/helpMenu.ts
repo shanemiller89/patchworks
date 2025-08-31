@@ -1,10 +1,11 @@
 import { align, centerAlign } from '../utils/alignmentHelpers.js'
 import { MAIN_TITLE } from '../utils/constants.js'
+import readline from 'readline'
 
 /**
  * Displays the help menu for the Patchworks CLI and waits for the user to press enter.
  */
-export function displayHelpMenu(rl) {
+export function displayHelpMenu(rl: readline.Interface): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
       console.log(align(MAIN_TITLE, centerAlign))
@@ -46,7 +47,7 @@ export function displayHelpMenu(rl) {
         resolve() // Resolve the promise when the user presses enter
       })
 
-      rl.on('error', (err) => {
+      rl.on('error', (err: Error) => {
         console.error('Error with readline:', err)
         reject(err)
       })

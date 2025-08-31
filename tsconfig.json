@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "checkJs": true,
+    "declaration": false,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strict": false,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "noImplicitReturns": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "noEmit": true,
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "analysis/**/*",
+    "config/**/*",
+    "menus/**/*",
+    "prompts/**/*",
+    "reports/**/*",
+    "tasks/**/*",
+    "utils/**/*",
+    "versionLogs/**/*",
+    "bin/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.js",
+    "**/__tests__/**"
+  ]
+}

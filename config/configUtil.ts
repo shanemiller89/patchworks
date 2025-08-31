@@ -1,8 +1,21 @@
 import fs from 'fs'
 import path from 'path'
 
-export async function generateConfig() {
-  const config = {
+export interface PatchworksConfig {
+  level: 'patch' | 'minor' | 'major'
+  install: boolean
+  limit: number | null
+  levelScope: 'strict' | 'cascade'
+  summary: boolean
+  skipped: boolean
+  write: boolean
+  excludeRepoless: boolean
+  debug: boolean
+  showExcluded: boolean
+}
+
+export async function generateConfig(): Promise<void> {
+  const config: PatchworksConfig = {
     // Configuration for Patchworks
     level: 'minor', // Set the default update level
     install: true, // Enable automatic installation of dependencies
@@ -22,18 +35,18 @@ export async function generateConfig() {
     fs.writeFileSync(outputPath, JSON.stringify(config, null, 2))
     console.log(`Configuration saved to ${outputPath}`)
   } catch (error) {
-    console.error(`Failed to write configuration: ${error.message}`)
+    console.error(`Failed to write configuration: ${(error as Error).message}`)
   }
 }
 
-export async function readConfig() {
+export async function readConfig(): Promise<PatchworksConfig | null> {
   const configPath = path.resolve(process.cwd(), 'patchworks-config.json')
 
   try {
     const configFile = fs.readFileSync(configPath, 'utf-8')
-    return JSON.parse(configFile)
+    return JSON.parse(configFile) as PatchworksConfig
   } catch (error) {
-    console.error(`Failed to read configuration: ${error.message}`)
+    console.error(`Failed to read configuration: ${(error as Error).message}`)
     return null // Return null if the config cannot be read
   }
 }

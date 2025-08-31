@@ -1,5 +1,5 @@
 import { ListrInquirerPromptAdapter } from '@listr2/prompt-adapter-inquirer'
-import { color, Listr, PRESET_TIMER, PRESET_TIMESTAMP } from 'listr2'
+import { color, Listr, PRESET_TIMER } from 'listr2'
 import { parseIncludedPackage } from '../analysis/analyzeLogData.js'
 import { fetchChangelog } from '../versionLogs/fetchChangelog.js'
 import { fetchCommits } from '../versionLogs/fetchCommits.js'
@@ -7,7 +7,7 @@ import { fetchReleaseNotes } from '../versionLogs/fetchReleaseNotes.js'
 import { bundleReports } from '../reports/generateReports.js'
 import logger from '../reports/logger.js'
 import { RELEASE_NOTES, SKIPPED, UNKNOWN } from '../utils/constants.js'
-import { installDependencies, writeChanges } from '../utils/updatingHelpers.js'
+import { installDependencies, writeChanges, IncludedPackage } from '../utils/updatingHelpers.js'
 import { processPackageVersions } from './versionProcessor/versionProcessor.js'
 import {
   promptUserForReportDirectory,
@@ -19,33 +19,64 @@ import {
   customTablePrompt,
   displayFinalReports,
 } from '../reports/consoleTaskReports.js'
+import { FinalOptions } from '../src/cli/index.js'
 
-export async function main(options) {
+export interface TaskContext {
+  reportDir?: string
+  includedPackages?: PackageWithLogs[]
+  selectedPackages?: IncludedPackage[]
+  source?: string
+  [key: string]: any
+}
+
+export interface PackageWithLogs extends IncludedPackage {
+  releaseNotes?: any
+  changelog?: any
+  source?: string
+  attemptedReleaseNotes?: boolean
+  attemptedFallbackA?: boolean
+  attemptedFallbackB?: boolean
+  importantTerms?: any
+  categorizedNotes?: any
+}
+
+export interface TaskFunction {
+  (ctx: TaskContext, task: any): Promise<any> | any
+}
+
+export interface TaskDefinition {
+  title: string
+  task?: TaskFunction
+  enabled?: () => boolean
+  skip?: (ctx: TaskContext) => boolean | string
+}
+
+export async function main(options: FinalOptions): Promise<void> {
   const { reportsOnly } = options
 
-  const tasks = new Listr(
+  const tasks = new Listr<TaskContext>(
     [
       // Step 1: Prompt user for custom directory
       {
         title: 'Check for or create Reporting Directory',
-        task: async (ctx, task) => {
+        task: async (ctx: TaskContext, task: any) => {
           ctx.reportDir = await promptUserForReportDirectory(task)
         },
       },
       // Step 2: Evaluate outdated dependencies
       {
         title: 'Evaluate outdated packages',
-        task: async (ctx, task) => {
+        task: async (ctx: TaskContext, task: any) => {
           return await processPackageVersions(task, options)
         },
       },
       // Step 3: Fetch release notes and changelogs
       {
         title: 'Fetch release notes and changelogs',
-        task: async (ctx, task) => {
-          const subTasks = ctx.includedPackages.map((pkg) => ({
+        task: async (ctx: TaskContext, task: any) => {
+          const subTasks = ctx.includedPackages!.map((pkg: PackageWithLogs) => ({
             title: `Fetch data for ${pkg.packageName}`,
-            task: async (ctx, task) => {
+            task: async (ctx: TaskContext, task: any) => {
               const { packageName, metadata } = pkg
 
               return task.newListr(
@@ -53,8 +84,8 @@ export async function main(options) {
                   {
                     title: 'Fetch release notes',
                     enabled: () => metadata.releaseNotesCompatible,
-                    task: async (ctx) => {
-                      pkg.releaseNotes = await fetchReleaseNotes({
+                    task: async (ctx: TaskContext) => {
+                      pkg.releaseNotes = await (fetchReleaseNotes as any)({
                         packageName,
                         metadata,
                       })
@@ -74,9 +105,9 @@ export async function main(options) {
                   {
                     title: 'Fetch changelog',
                     enabled: () => metadata.fallbackACompatible,
-                    skip: (ctx) => ctx.source === RELEASE_NOTES,
-                    task: async (ctx) => {
-                      pkg.changelog = await fetchChangelog({
+                    skip: (ctx: TaskContext) => ctx.source === RELEASE_NOTES,
+                    task: async (ctx: TaskContext) => {
+                      pkg.changelog = await (fetchChangelog as any)({
                         packageName,
                         metadata,
                       })
@@ -96,11 +127,11 @@ export async function main(options) {
                   {
                     title: 'Fetch commits',
                     enabled: () => metadata.fallbackBCompatible,
-                    skip: (ctx) =>
+                    skip: (ctx: TaskContext) =>
                       ctx.source === RELEASE_NOTES ||
                       ctx.source === 'fallbackA',
-                    task: async (ctx) => {
-                      pkg.changelog = await fetchCommits({
+                    task: async (ctx: TaskContext) => {
+                      pkg.changelog = await (fetchCommits as any)({
                         packageName,
                         metadata,
                       })
@@ -144,8 +175,8 @@ export async function main(options) {
       // New Task: Display results and ask to proceed
       {
         title: 'Display results and ask to proceed',
-        task: async (ctx, task) => {
-          const resultsTable = await displayResultsTable(ctx.includedPackages)
+        task: async (ctx: TaskContext, task: any) => {
+          const resultsTable = await displayResultsTable(ctx.includedPackages!)
           task.output = `Results:\n${resultsTable}`
 
           const shouldContinue = await askToContinue(
@@ -161,14 +192,14 @@ export async function main(options) {
       // Step 4: Parse and categorize logs
       {
         title: 'Parse and categorize logs',
-        task: async (ctx, task) => {
-          const subTasks = ctx.includedPackages.map((pkg) => ({
+        task: async (ctx: TaskContext, task: any) => {
+          const subTasks = ctx.includedPackages!.map((pkg: PackageWithLogs) => ({
             title: `Parse logs for ${pkg.packageName}`,
             skip: () => {
               const { releaseNotes, changelog } = pkg
               return (_.isEmpty(releaseNotes) ||
-                releaseNotes === UNKNOWN ||
-                releaseNotes === SKIPPED) &&
+                releaseNotes == UNKNOWN ||
+                releaseNotes == SKIPPED) &&
                 (!changelog || changelog === UNKNOWN || changelog === SKIPPED)
                 ? 'Both releaseNotes and changelog are unavailable, skipping parsing.'
                 : false
@@ -187,7 +218,7 @@ export async function main(options) {
       {
         title: 'Select packages to update',
         enabled: () => !reportsOnly,
-        task: async (ctx, task) => {
+        task: async (ctx: TaskContext, task: any) => {
           // Use the custom table prompt to select packages
           ctx.selectedPackages = await task
             .prompt(ListrInquirerPromptAdapter)
@@ -198,16 +229,15 @@ export async function main(options) {
         },
         rendererOptions: { bottomBar: 999 },
       },
-      // Step 6: Select packages to update
-      // Step 7: Write changes to package.json (optional)
+      // Step 6: Write changes to package.json (optional)
       {
         title: 'Write changes to package.json',
         enabled: () => !reportsOnly,
-        task: async (ctx) => {
-          await writeChanges(ctx.selectedPackages)
+        task: async (ctx: TaskContext) => {
+          await writeChanges(ctx.selectedPackages!)
         },
       },
-      // Step 8: Install updated dependencies (optional)
+      // Step 7: Install updated dependencies (optional)
       {
         title: 'Install updated dependencies',
         enabled: () => options.install && !reportsOnly,
@@ -217,20 +247,20 @@ export async function main(options) {
       },
       {
         title: 'Final Reports',
-        task: async (ctx, task) => {
+        task: async (ctx: TaskContext, task: any) => {
           if (!reportsOnly) {
-            const finalReports = await displayFinalReports(ctx.selectedPackages)
+            const finalReports = await displayFinalReports(ctx.selectedPackages!)
             const reports = await bundleReports(
-              ctx.selectedPackages,
-              ctx.reportDir,
+              ctx.selectedPackages!,
+              ctx.reportDir!,
             )
             task.title = reports
             task.output = finalReports
           } else {
-            const finalReports = await displayFinalReports(ctx.includedPackages)
+            const finalReports = await displayFinalReports(ctx.includedPackages!)
             const reports = await bundleReports(
-              ctx.includedPackages,
-              ctx.reportDir,
+              ctx.includedPackages!,
+              ctx.reportDir!,
             )
             task.title = reports
             task.output = finalReports
@@ -243,16 +273,14 @@ export async function main(options) {
       collectErrors: 'full',
       concurrent: false,
       exitOnError: true,
-      prompt: new ListrInquirerPromptAdapter(),
       rendererOptions: {
         collapseSubtasks: false,
         collapseSkips: false,
         collapseErrors: false,
-        timestamp: PRESET_TIMESTAMP,
         timer: {
           ...PRESET_TIMER,
-          condition: (duration) => duration > 250,
-          format: (duration) => {
+          condition: (duration: number) => duration > 250,
+          format: (duration: number) => {
             return duration > 10000 ? color.red : color.green
           },
         },
@@ -264,6 +292,6 @@ export async function main(options) {
     await tasks.run()
     logger.success('Workflow completed successfully!')
   } catch (err) {
-    logger.error(`Workflow failed: ${err.message}`)
+    logger.error(`Workflow failed: ${(err as Error).message}`)
   }
 }

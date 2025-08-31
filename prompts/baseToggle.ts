@@ -7,19 +7,30 @@ import {
 } from '@inquirer/core'
 import chalk from 'chalk'
 
-// Define a custom toggle prompt
+export interface ToggleConfig {
+  message: string
+  active?: string
+  inactive?: string
+  default?: boolean
+}
 
-export const customTogglePrompt = createPrompt((config, done) => {
-  const [status, setStatus] = useState('idle')
-  const activeLabel = config.active || 'Yes'
-  const inactiveLabel = config.inactive || 'No'
-  const [value, setValue] = useState(
+export interface KeyEvent {
+  name: string
+  [key: string]: any
+}
+
+// Define a custom toggle prompt
+export const customTogglePrompt = createPrompt<boolean, ToggleConfig>((config, done) => {
+  const [status, setStatus] = useState<string>('idle')
+  const activeLabel: string = config.active || 'Yes'
+  const inactiveLabel: string = config.inactive || 'No'
+  const [value, setValue] = useState<string>(
     config.default ? activeLabel : inactiveLabel,
   )
   const prefix = usePrefix({ status })
 
   // Handle keypress events
-  useKeypress((key) => {
+  useKeypress((key: KeyEvent) => {
     if (isEnterKey(key)) {
       setStatus('done')
       done(value === activeLabel)
@@ -28,8 +39,8 @@ export const customTogglePrompt = createPrompt((config, done) => {
     }
   })
 
-  const message = chalk.bold(config.message)
-  const optionsDisplay = `${
+  const message: string = chalk.bold(config.message)
+  const optionsDisplay: string = `${
     value === activeLabel
       ? chalk.cyanBright(activeLabel)
       : chalk.dim(activeLabel)
@@ -38,7 +49,7 @@ export const customTogglePrompt = createPrompt((config, done) => {
       ? chalk.cyanBright(inactiveLabel)
       : chalk.dim(inactiveLabel)
   }`
-  const formattedValue = status === 'done' ? chalk.green(value) : optionsDisplay
+  const formattedValue: string = status === 'done' ? chalk.green(value) : optionsDisplay
 
   return `${prefix} ${message} ${formattedValue}`
 })

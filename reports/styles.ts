@@ -1,6 +1,37 @@
-import chalk from 'chalk'
+import chalk, { ChalkInstance } from 'chalk'
 
-export const styles = {
+export interface StylesType {
+  titleHeader: ChalkInstance
+  sectionHeader: ChalkInstance
+  success: ChalkInstance
+  warning: ChalkInstance
+  error: ChalkInstance
+  info: ChalkInstance
+  breaking: ChalkInstance
+  neutral: ChalkInstance
+  generic: ChalkInstance
+  link: ChalkInstance
+  separator: string
+  debug: ChalkInstance
+  evaluatingState: ChalkInstance
+  skippingState: ChalkInstance
+  stateMessage: ChalkInstance
+  evaluating: ChalkInstance
+  skipping: ChalkInstance
+  stateData: ChalkInstance
+  excluding: ChalkInstance
+  fallback: ChalkInstance
+  columnHeader: ChalkInstance
+  current: ChalkInstance
+  latest: ChalkInstance
+  value: ChalkInstance
+  patch: ChalkInstance
+  minor: ChalkInstance
+  major: ChalkInstance
+  [key: string]: ChalkInstance | string
+}
+
+export const styles: StylesType = {
   titleHeader: chalk.bold.blueBright.inverse, // Formerly 'headers'
   sectionHeader: chalk.italic.bold.blueBright, // Formerly 'subheaders'
   success: chalk.greenBright,
@@ -34,41 +65,52 @@ export const styles = {
   major: chalk.red.bold.italic,
 }
 
+export interface BoxOptions {
+  title: string
+  titleAlignment: string
+  float?: string
+  padding: number
+  margin: number
+  borderStyle: string
+  borderColor: string
+  backgroundColor: string
+}
+
 /**
  * Dynamically formats a separator line with a given length and symbol.
- * @param {number} length - Length of the separator line.
- * @param {string} [symbol='='] - The symbol to repeat for the separator.
- * @param {Function} color - Chalk color function.
- * @returns {string} Formatted separator line.
+ * @param length - Length of the separator line.
+ * @param symbol - The symbol to repeat for the separator.
+ * @param color - Chalk color function.
+ * @returns Formatted separator line.
  */
-export function formatSeparator(length = 40, symbol = '=', color = chalk.gray) {
+export function formatSeparator(length: number = 40, symbol: string = '=', color: ChalkInstance = chalk.gray): string {
   return color(symbol.repeat(length))
 }
 
 /**
  * Formats a message with a specific log level and style.
- * @param {string} level - The log level (e.g., [INFO], [ERROR]).
- * @param {string} message - The message to style.
- * @param {Function} style - Chalk style function.
- * @returns {string} Styled message string.
+ * @param level - The log level (e.g., [INFO], [ERROR]).
+ * @param message - The message to style.
+ * @param style - Chalk style function.
+ * @returns Styled message string.
  */
-export function styledMessage(level, message, style) {
+export function styledMessage(level: string, message: string, style: ChalkInstance): string {
   return `${style(level)} ${message}`
 }
 
 /**
  * Formats a bullet list of items with a specified color.
- * @param {string[]} items - List of items to format.
- * @param {Function} color - Chalk color function for item text.
- * @returns {string} Formatted bullet list.
+ * @param items - List of items to format.
+ * @param color - Chalk color function for item text.
+ * @returns Formatted bullet list.
  */
-export function formatBulletList(items, color = chalk.white) {
+export function formatBulletList(items: string[], color: ChalkInstance = chalk.white): string {
   return items
-    .map((item, idx) => `${chalk.gray(idx + 1)}. ${color(item)}`)
+    .map((item, idx) => `${chalk.gray((idx + 1).toString())}. ${color(item)}`)
     .join('\n')
 }
 
-export const mainTitleOptions = {
+export const mainTitleOptions: BoxOptions = {
   title: 'Stitching Your Changelog Chaos into Seamless Updates.',
   titleAlignment: 'center',
   float: 'center',
@@ -80,7 +122,7 @@ export const mainTitleOptions = {
   backgroundColor: 'black', // Background color inside the box
 }
 
-export const packageReportOptions = (packageName) => ({
+export const packageReportOptions = (packageName: string): BoxOptions => ({
   title: packageName,
   titleAlignment: 'center',
   padding: 1, // Space inside the box

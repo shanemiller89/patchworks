@@ -1,20 +1,36 @@
 import { getBorderCharacters, table } from 'table'
 import { styles } from '../reports/styles.js'
 
+export interface TableCell {
+  value: any
+  type?: 'string' | 'boolean' | 'semantic'
+}
+
+export interface TableOptions {
+  fullWidth?: boolean
+  title?: string
+  columnConfig?: (baseWidth: number, terminalWidth: number) => Record<number, any>
+}
+
+export interface FormatOptions {
+  type?: 'string' | 'boolean' | 'semantic'
+}
+
 /**
  * Class representing a table generator.
  */
 export class TableGenerator {
+  private headers: string[]
+  private data: TableCell[][]
+  private options: TableOptions
+
   /**
    * Create a table generator.
-   * @param {Array<string>} headers - The headers for the table.
-   * @param {Array<Array<any>>} data - The data for the table rows.
-   * @param {Object} [options={}] - Configuration options for the table.
-   * @param {boolean} [options.fullWidth=false] - Whether to use the full terminal width.
-   * @param {string} [options.title='Table'] - The title of the table.
-   * @param {Function} [options.columnConfig] - Function to generate custom column configuration.
+   * @param headers - The headers for the table.
+   * @param data - The data for the table rows.
+   * @param options - Configuration options for the table.
    */
-  constructor(headers, data, options = {}) {
+  constructor(headers: string[], data: TableCell[][], options: TableOptions = {}) {
     this.headers = headers
     this.data = data
     this.options = options
@@ -22,26 +38,26 @@ export class TableGenerator {
 
   /**
    * Get the formatted value for a table cell.
-   * @param {any} value - The value to format.
-   * @param {Object} [options={}] - Options for formatting.
-   * @param {string} [options.type='string'] - The type of the value ('string' or 'boolean').
-   * @returns {string} The formatted value.
+   * @param value - The value to format.
+   * @param options - Options for formatting.
+   * @returns The formatted value.
    */
-  getValue(value, options = { type: 'string' }) {
+  getValue(value: any, options: FormatOptions = { type: 'string' }): string {
     if (options.type === 'boolean') {
       return value === true ? styles.success('✓') : styles.error('✗')
     }
     if (options.type === 'semantic') {
-      return styles[value](value)
+      const styleFunction = styles[value as keyof typeof styles]
+      return typeof styleFunction === 'function' ? styleFunction(value) : value
     }
     return value === undefined || value === null ? styles.neutral('-') : value
   }
 
   /**
    * Generate the table as a string.
-   * @returns {string} The generated table.
+   * @returns The generated table.
    */
-  generateTable() {
+  generateTable(): string {
     const headerRow = this.headers.map((h) => styles.columnHeader(h))
     const rows = this.data.map((row) =>
       row.map((cell) =>
@@ -49,7 +65,7 @@ export class TableGenerator {
       ),
     )
 
-    const terminalWidth = process.stdout.columns
+    const terminalWidth = process.stdout.columns || 80
     const totalColumns = this.headers.length
     const baseWidth = Math.floor(terminalWidth / totalColumns)
 

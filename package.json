@@ -2,9 +2,9 @@
   "name": "patchworks",
   "version": "0.1.0",
   "description": "A CLI tool to manage dependency updates by semantic versioning, breaking change detection, and batch selection for efficient prioritization",
-  "main": "src/cli/index.js",
+  "main": "src/cli/index.ts",
   "bin": {
-    "patchworks": "./bin/patchworks.js"
+    "patchworks": "./bin/patchworks.ts"
   },
   "files": [
     "bin/",
@@ -18,9 +18,7 @@
     "utils/",
     "versionLogs/",
     "README.md",
-    "LICENSE",
-    "SECURITY.md",
-    "CHANGELOG.md"
+    "LICENSE"
   ],
   "scripts": {
     "test": "jest",
@@ -29,9 +27,12 @@
     "lint": "eslint -c .eslintrc.json \"src/**/*.js\" \"analysis/**/*.js\" \"config/**/*.js\" \"menus/**/*.js\" \"prompts/**/*.js\" \"reports/**/*.js\" \"tasks/**/*.js\" \"utils/**/*.js\" \"versionLogs/**/*.js\"",
     "lint:fix": "eslint -c .eslintrc.json \"src/**/*.js\" \"analysis/**/*.js\" \"config/**/*.js\" \"menus/**/*.js\" \"prompts/**/*.js\" \"reports/**/*.js\" \"tasks/**/*.js\" \"utils/**/*.js\" \"versionLogs/**/*.js\" --fix",
     "format": "prettier --write \"src/**/*.js\" \"analysis/**/*.js\" \"config/**/*.js\" \"menus/**/*.js\" \"prompts/**/*.js\" \"reports/**/*.js\" \"tasks/**/*.js\" \"utils/**/*.js\" \"versionLogs/**/*.js\"",
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch",
+    "build": "tsc",
     "prepare": "chmod +x bin/patchworks.js",
     "pre-publish": "./scripts/pre-publish.sh",
-    "prepublishOnly": "./scripts/pre-publish.sh && npm run lint && npm test",
+    "prepublishOnly": "./scripts/pre-publish.sh && npm run lint && npm run type-check && npm test",
     "local:install": "npm link",
     "local:uninstall": "npm unlink"
   },
@@ -98,7 +99,6 @@
     "marked": "^4.2.0",
     "npm-registry-fetch": "^18.0.2",
     "ora": "^5.4.1",
-    "patchworks": "^0.0.3",
     "sanitize-html": "^2.14.0",
     "semver": "^7.3.8",
     "table": "^6.9.0",
@@ -109,8 +109,15 @@
     "@babel/cli": "^7.26.4",
     "@babel/core": "^7.26.9",
     "@babel/preset-env": "^7.26.9",
+    "@types/align-text": "^1.0.4",
+    "@types/conventional-commits-parser": "^5.0.1",
+    "@types/lodash": "^4.17.20",
+    "@types/node": "^24.3.0",
+    "@types/semver": "^7.7.0",
+    "@types/tar-stream": "^3.1.4",
     "eslint": "^8.0.0",
     "jest": "^29.0.0",
-    "prettier": "^2.8.0"
+    "prettier": "^2.8.0",
+    "typescript": "^5.9.2"
   }
 }

@@ -4,30 +4,45 @@ import { getBorderCharacters, table } from 'table'
 import { displayHelpMenu } from './helpMenu.js'
 import { main } from '../tasks/main.js'
 import { styles } from '../reports/styles.js'
-import { generateConfig, readConfig } from '../config/configUtil.js'
+import { generateConfig, readConfig, PatchworksConfig } from '../config/configUtil.js'
 import { MAIN_TITLE } from '../utils/constants.js'
 import readline from 'readline'
 import { promptUserForLevel } from '../prompts/prompts.js'
+import { FinalOptions, Level } from '../src/cli/index.js'
 
 const DOUBLE_LINE =
   '======================================================================================================================'
 const SINGLE_LINE =
   '----------------------------------------------------------------------------------------------------------------------'
+
+export interface MenuOptions {
+  level?: Level | null
+  limit?: number | null
+  levelScope?: 'strict' | 'cascade'
+  summary?: boolean
+  showExcluded?: boolean
+  install?: boolean
+  skipped?: boolean
+  write?: boolean
+  excludeRepoless?: boolean
+  debug?: boolean
+}
+
 // Render the Patchworks title and configuration
-export async function renderMainMenu(options) {
+export async function renderMainMenu(options: MenuOptions): Promise<void> {
   // Read configuration from the config file
-  const config = (await readConfig()) || {}
+  const config: PatchworksConfig | null = (await readConfig()) || null
 
   const {
-    level = options.level || config.level || 'minor',
-    limit = options.limit || config.limit || null,
-    levelScope = options.levelScope || config.levelScope || 'strict',
-    summary = options.summary || config.summary || false,
-    showExcluded = options.showExcluded || config.showExcluded || false,
-    install = options.install || config.install || true,
+    level = options.level || config?.level || 'minor',
+    limit = options.limit || config?.limit || null,
+    levelScope = options.levelScope || config?.levelScope || 'strict',
+    summary = options.summary || config?.summary || false,
+    showExcluded = options.showExcluded || config?.showExcluded || false,
+    install = options.install || config?.install || true,
   } = options
 
-  let selectedIndex = 0
+  let selectedIndex: number = 0
 
   let rl = readline.createInterface({
     input: process.stdin,
@@ -38,7 +53,7 @@ export async function renderMainMenu(options) {
   readline.emitKeypressEvents(process.stdin)
   if (process.stdin.isTTY) process.stdin.setRawMode(true)
 
-  const renderMenu = () => {
+  const renderMenu = (): void => {
     console.clear()
     console.log(
       boxen(chalk.blue.bold(MAIN_TITLE), {
@@ -51,11 +66,11 @@ export async function renderMainMenu(options) {
         borderStyle: 'double',
         borderColor: 'blue',
         backgroundColor: 'black',
-      }),
+      } as any),
     )
 
     // Configuration details with ASCII symbols
-    const configDetails = `
+    const configDetails: string = `
 ${chalk.blue(DOUBLE_LINE)}
   ${chalk.bold.blue.italic('Patchworks Configuration')}
 ${chalk.blue(DOUBLE_LINE)}
@@ -183,7 +198,7 @@ ${chalk.blue(DOUBLE_LINE)}
   }
 
   // Define the keypress handler function
-  const keypressHandler = async (str, key) => {
+  const keypressHandler = async (str: string, key: readline.Key): Promise<void> => {
     if (key.name === 'up') {
       selectedIndex = (selectedIndex - 1 + 7) % 7
     } else if (key.name === 'down') {
@@ -192,7 +207,7 @@ ${chalk.blue(DOUBLE_LINE)}
       switch (selectedIndex) {
         case 0: {
           console.log('Running Patchworks Main...')
-          let runLevel = level
+          let runLevel: Level | null = level as Level | null
           if (!level) {
             // Temporarily disable raw mode and keypress events
             process.stdin.setRawMode(false)
@@ -210,28 +225,49 @@ ${chalk.blue(DOUBLE_LINE)}
           if (process.stdin.isTTY) process.stdin.setRawMode(false)
           rl.close()
 
-          return await main({
+          const finalOptions: FinalOptions = {
             level: runLevel,
             limit,
             levelScope,
             summary,
             showExcluded,
             install,
-          }).then(() => {
+            skipped: false,
+            write: false,
+            excludeRepoless: false,
+            debug: false,
+          }
+
+          return await main(finalOptions).then(() => {
             process.exit(0)
           })
         }
-        case 1:
+        case 1: {
           console.log('Running Patchworks Main All...')
           // Clean up event listeners and stdin
           process.stdin.removeAllListeners('keypress')
           if (process.stdin.isTTY) process.stdin.setRawMode(false)
           rl.close()
 
-          return await main({ level: 'major', levelScope: 'cascade' })
-        case 2:
+          const finalOptions: FinalOptions = {
+            level: 'major',
+            levelScope: 'cascade',
+            limit: null,
+            summary: false,
+            skipped: false,
+            write: false,
+            install: true,
+            excludeRepoless: false,
+            debug: false,
+            showExcluded: false,
+          }
+
+          return await main(finalOptions)
+        }
+        case 2: {
           console.log('Generating Reports Only...')
-          return await main({
+          
+          const finalOptions: FinalOptions = {
             reportsOnly: true,
             level,
             limit,
@@ -239,19 +275,37 @@ ${chalk.blue(DOUBLE_LINE)}
             summary,
             showExcluded,
             install,
-          }).then(() => {
+            skipped: false,
+            write: false,
+            excludeRepoless: false,
+            debug: false,
+          }
+
+          return await main(finalOptions).then(() => {
             process.exit(0)
           })
-        case 3:
+        }
+        case 3: {
           console.log('Generating Reports All...')
-          return await main({
+          
+          const finalOptions: FinalOptions = {
             reportsOnly: true,
             level: 'major',
             levelScope: 'cascade',
             showExcluded: true,
-          }).then(() => {
+            limit: null,
+            summary: false,
+            skipped: false,
+            write: false,
+            install: true,
+            excludeRepoless: false,
+            debug: false,
+          }
+
+          return await main(finalOptions).then(() => {
             process.exit(0)
           })
+        }
         case 4:
           console.log('Generating Config...')
           await generateConfig().then(() => {

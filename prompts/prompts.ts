@@ -8,11 +8,36 @@ import logger, { summarizeCategorizedNotes } from '../reports/logger.js'
 import { styles } from '../reports/styles.js'
 import fs from 'fs'
 import path from 'path'
+import { Level } from '../src/cli/index.js'
+
+// Type definitions
+export interface TaskInterface {
+  prompt: (adapter: any) => {
+    run: (prompt: any, options: any) => Promise<any>
+  }
+}
+
+export interface PackageChoice {
+  name: string
+  message: string
+  value: string
+}
+
+export interface PackageForSelection {
+  packageName: string
+  categorizedNotes?: any[]
+  metadata: {
+    current: string
+    latest: string
+    updateType: string
+    updatingDifficulty: number
+  }
+}
 
 // Register the file selector prompt
-inquirer.registerPrompt('file-selector', fileSelector)
+inquirer.registerPrompt('file-selector', fileSelector as any)
 
-export async function askToContinue(task, message = 'Do you want to proceed?') {
+export async function askToContinue(task: TaskInterface, message: string = 'Do you want to proceed?'): Promise<boolean> {
   try {
     const answer = await task
       .prompt(ListrInquirerPromptAdapter)
@@ -24,12 +49,12 @@ export async function askToContinue(task, message = 'Do you want to proceed?') {
       })
     return answer
   } catch (error) {
-    logger.error(`An error occurred during the toggle prompt: ${error.message}`)
+    logger.error(`An error occurred during the toggle prompt: ${(error as Error).message}`)
     throw error
   }
 }
 
-export async function promptUserForLevel() {
+export async function promptUserForLevel(): Promise<Level> {
   try {
     const { level } = await inquirer.prompt([
       {
@@ -60,15 +85,15 @@ export async function promptUserForLevel() {
     ])
 
     console.log(`Selected update level: ${level}`)
-    return level
+    return level as Level
   } catch (error) {
-    console.error(`An error occurred during level selection: ${error.message}`)
+    console.error(`An error occurred during level selection: ${(error as Error).message}`)
     throw error
   }
 }
 
-export async function promptUserForReportDirectory(task) {
-  const defaultDir = path.join(process.cwd(), 'patchworks-reports')
+export async function promptUserForReportDirectory(task: TaskInterface): Promise<string> {
+  const defaultDir: string = path.join(process.cwd(), 'patchworks-reports')
 
   // Check if the default directory already exists
   if (fs.existsSync(defaultDir)) {
@@ -78,7 +103,7 @@ export async function promptUserForReportDirectory(task) {
 
   try {
     // Step 1: Ask if the user wants to specify a custom directory using a toggle
-    const useCustomDir = await task
+    const useCustomDir: boolean = await task
       .prompt(ListrInquirerPromptAdapter)
       .run(customTogglePrompt, {
         message: `Do you want to specify a custom directory for reports? (Default: ${defaultDir})`,
@@ -87,20 +112,20 @@ export async function promptUserForReportDirectory(task) {
         inactive: 'No',
       })
 
-    let reportDir
+    let reportDir: string
 
     if (useCustomDir) {
       // Step 2: Use file selector to choose a directory
       reportDir = await task
         .prompt(ListrInquirerPromptAdapter)
-        .run(fileSelector, {
+        .run(fileSelector as any, {
           message: 'Select a directory for reports:',
           basePath: process.cwd(), // Start from the current working directory
           type: 'directory', // Only allow directory selection
         })
 
       // Step 3: Ask if the user wants to create a "patchworks-reports" folder
-      const createReportsFolder = await task
+      const createReportsFolder: boolean = await task
         .prompt(ListrInquirerPromptAdapter)
         .run(customTogglePrompt, {
           message:
@@ -111,7 +136,7 @@ export async function promptUserForReportDirectory(task) {
         })
 
       if (createReportsFolder) {
-        const reportsFolderPath = path.join(reportDir, 'patchworks-reports')
+        const reportsFolderPath: string = path.join(reportDir, 'patchworks-reports')
         if (!fs.existsSync(reportsFolderPath)) {
           fs.mkdirSync(reportsFolderPath, { recursive: true })
           logger.info(`Created directory: ${reportsFolderPath}`)
@@ -131,7 +156,7 @@ export async function promptUserForReportDirectory(task) {
     return reportDir // Return the final report directory
   } catch (error) {
     logger.error(
-      `An error occurred during the directory prompt: ${error.message}`,
+      `An error occurred during the directory prompt: ${(error as Error).message}`,
     )
     throw error // Rethrow the error for further handling if needed
   }
@@ -139,17 +164,17 @@ export async function promptUserForReportDirectory(task) {
 
 /**
  * Prompt the user to select packages to update.
- * @param {Object} task - The Listr2 task instance to use for prompting.
- * @param {Array} packages - List of packages to choose from.
- * @returns {Promise<Array>} The selected packages.
+ * @param task - The Listr2 task instance to use for prompting.
+ * @param packages - List of packages to choose from.
+ * @returns The selected packages.
  */
-export async function promptUserForPackageSelection(task, packages) {
+export async function promptUserForPackageSelection(task: TaskInterface, packages: PackageForSelection[]): Promise<PackageForSelection[]> {
   try {
     if (!packages || packages.length === 0) {
       throw new Error('No packages available for selection.')
     }
 
-    const choices = packages.map((pkg) => {
+    const choices: PackageChoice[] = packages.map((pkg) => {
       const { categorizedNotes, metadata } = pkg
       const { updateType, updatingDifficulty } = metadata
       const categoryValues = summarizeCategorizedNotes(categorizedNotes)
@@ -158,7 +183,7 @@ export async function promptUserForPackageSelection(task, packages) {
       const hasBreakingChange = !_.isEmpty(breaking_change)
         ? styles.breaking('TRUE')
         : styles.generic('FALSE')
-      const styledUpdateType = styles[updateType](_.upperCase(updateType))
+      const styledUpdateType = (styles as any)[updateType](_.upperCase(updateType))
 
       return {
         name: pkg.packageName,
@@ -167,22 +192,22 @@ export async function promptUserForPackageSelection(task, packages) {
         } => Latest: ${
           pkg.metadata.latest
         } - ${styledUpdateType} (Score of ${styles.generic(
-          updatingDifficulty,
+          updatingDifficulty.toString(),
         )}) - Potential Breaking Changes: ${hasBreakingChange}`,
         value: pkg.packageName,
       }
     })
 
-    const selectedPackageNames = await task
+    const selectedPackageNames: string[] = await task
       .prompt(ListrInquirerPromptAdapter)
       .run(checkbox, {
         message: 'Select packages to update:',
         choices,
-        validate: (value) =>
+        validate: (value: string[]) =>
           value.length ? true : 'You must select at least one package.',
       })
 
-    const selectedPackages = packages.filter((pkg) =>
+    const selectedPackages: PackageForSelection[] = packages.filter((pkg) =>
       selectedPackageNames.includes(pkg.packageName),
     )
 
@@ -193,7 +218,7 @@ export async function promptUserForPackageSelection(task, packages) {
     logger.info(`Selected packages: ${selectedPackageNames.join(', ')}`)
     return selectedPackages
   } catch (error) {
-    logger.error(`An error occurred during package selection: ${error.message}`)
+    logger.error(`An error occurred during package selection: ${(error as Error).message}`)
     throw error
   }
 }

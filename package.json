@@ -2,9 +2,9 @@
   "name": "patchworks",
   "version": "0.1.0",
   "description": "A CLI tool to manage dependency updates by semantic versioning, breaking change detection, and batch selection for efficient prioritization",
-  "main": "src/cli/index.ts",
+  "main": "src/cli/index.js",
   "bin": {
-    "patchworks": "./bin/patchworks.ts"
+    "patchworks": "./bin/patchworks.js"
   },
   "files": [
     "bin/",
@@ -21,7 +21,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "jest",
+    "test": "npm run build && jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint -c .eslintrc.json \"src/**/*.js\" \"analysis/**/*.js\" \"config/**/*.js\" \"menus/**/*.js\" \"prompts/**/*.js\" \"reports/**/*.js\" \"tasks/**/*.js\" \"utils/**/*.js\" \"versionLogs/**/*.js\"",
@@ -29,8 +29,9 @@
     "format": "prettier --write \"src/**/*.js\" \"analysis/**/*.js\" \"config/**/*.js\" \"menus/**/*.js\" \"prompts/**/*.js\" \"reports/**/*.js\" \"tasks/**/*.js\" \"utils/**/*.js\" \"versionLogs/**/*.js\"",
     "type-check": "tsc --noEmit",
     "type-check:watch": "tsc --noEmit --watch",
-    "build": "tsc",
-    "prepare": "chmod +x bin/patchworks.js",
+    "build": "tsc -p tsconfig.build.json",
+    "postbuild": "chmod +x bin/patchworks.js",
+    "prepare": "npm run build",
     "pre-publish": "./scripts/pre-publish.sh",
     "prepublishOnly": "./scripts/pre-publish.sh && npm run lint && npm run type-check && npm test",
     "local:install": "npm link",

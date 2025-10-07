@@ -1,10 +1,15 @@
 #!/bin/bash
 
+set -euo pipefail
+
 echo "🧪 Testing Patchworks CLI Package"
+
+echo "🛠️ Building CLI entry points..."
+npm run build
 
 # 1. Test the bin file directly first
 echo "1️⃣ Testing bin file directly..."
-if ./bin/patchworks.js --help; then
+if node ./bin/patchworks.js --help; then
     echo "✅ Bin file works directly"
 else
     echo "❌ Bin file fails - check permissions and shebang"

@@ -183,6 +183,7 @@ export default function (): void {
         summary: resolveBooleanOption(options.summary, config?.summary, false),
         skipped: resolveBooleanOption(options.skipped, config?.skipped, false),
         write: resolveBooleanOption(options.write, config?.write, false),
+        install: resolveBooleanOption(options.install, config?.install, false),
         excludeRepoless: resolveBooleanOption(
           options.excludeRepoless,
           config?.excludeRepoless,

@@ -1,3 +1,5 @@
+import { describe, test, expect } from 'vitest';
+
 describe('Validation Tests', () => {
   describe('Semantic Version Validation', () => {
     test('should validate patch level', () => {

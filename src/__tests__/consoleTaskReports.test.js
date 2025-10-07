@@ -1,104 +1,92 @@
-import { jest } from '@jest/globals'
+import { describe, test, expect, beforeAll, afterAll, vi } from 'vitest';
 
 const createChalkMock = () => {
   const handler = {
     apply: (_target, _thisArg, args) => args[0],
     get: (_target, _prop) => proxy,
-  }
-  const proxy = new Proxy(() => '', handler)
-  return proxy
-}
+  };
+  const proxy = new Proxy(() => '', handler);
+  return proxy;
+};
 
-const mockChalk = createChalkMock()
+const mockChalk = createChalkMock();
 
-jest.mock('chalk', () => ({
+vi.mock('chalk', () => ({
   __esModule: true,
   default: mockChalk,
-}))
+}));
 
-jest.mock('@inquirer/core', () => ({
-  createPrompt: jest.fn(),
-  isDownKey: jest.fn(),
-  isEnterKey: jest.fn(),
-  isSpaceKey: jest.fn(),
-  isUpKey: jest.fn(),
-  useKeypress: jest.fn(),
-  usePrefix: jest.fn(),
-  useState: jest.fn(() => [0, jest.fn()]),
-}))
+vi.mock('@inquirer/core', () => ({
+  createPrompt: vi.fn(),
+  isDownKey: vi.fn(),
+  isEnterKey: vi.fn(),
+  isSpaceKey: vi.fn(),
+  isUpKey: vi.fn(),
+  useKeypress: vi.fn(),
+  usePrefix: vi.fn(),
+  useState: vi.fn(() => [0, vi.fn()]),
+}));
 
-jest.mock(
-  '../../utils/constants.js',
-  () => ({
-    __esModule: true,
-    SKIPPED: 'SKIPPED',
-    UNKNOWN: 'UNKNOWN',
-  }),
-  { virtual: true },
-)
+vi.mock('../../utils/constants.js', () => ({
+  __esModule: true,
+  SKIPPED: 'SKIPPED',
+  UNKNOWN: 'UNKNOWN',
+}));
 
-jest.mock(
-  '../../reports/styles.js',
-  () => ({
-    styles: new Proxy(
-      {},
-      {
-        get: () => (value) => value,
-      },
-    ),
-  }),
-  { virtual: true },
-)
-
-jest.mock(
-  '../../utils/TableGenerator.js',
-  () => ({
-    TableGenerator: class {
-      constructor(_headers, data) {
-        this.data = data
-      }
-
-      generateTable() {
-        return this.data
-          .map((row) =>
-            row
-              .map((cell) => {
-                if (cell.type === 'boolean') {
-                  return cell.value ? '✓' : '✗'
-                }
-                return cell.value ?? '-'
-              })
-              .join('|'),
-          )
-          .join('\n')
-      }
+vi.mock('../../reports/styles.js', () => ({
+  styles: new Proxy(
+    {},
+    {
+      get: () => (value) => value,
     },
-  }),
-  { virtual: true },
-)
+  ),
+}));
 
-const stripAnsi = (input) => input.replace(/\u001b\[[0-9;]*m/g, '')
+vi.mock('../../utils/TableGenerator.js', () => ({
+  TableGenerator: class {
+    constructor(_headers, data) {
+      this.data = data;
+    }
 
-const modulePromise = import('../../reports/consoleTaskReports.js')
+    generateTable() {
+      return this.data
+        .map((row) =>
+          row
+            .map((cell) => {
+              if (cell.type === 'boolean') {
+                return cell.value ? '✓' : '✗';
+              }
+              return cell.value ?? '-';
+            })
+            .join('|'),
+        )
+        .join('\n');
+    }
+  },
+}));
 
-let displayIncludedPackages
-let displayResultsTable
+const stripAnsi = (input) => input.replace(/\u001b\[[0-9;]*m/g, '');
+
+const modulePromise = import('../../reports/consoleTaskReports.js');
+
+let displayIncludedPackages;
+let displayResultsTable;
 
 describe('consoleTaskReports compatibility flags', () => {
-  let originalColumns
+  let originalColumns;
 
   beforeAll(async () => {
-    const module = await modulePromise
-    displayIncludedPackages = module.displayIncludedPackages
-    displayResultsTable = module.displayResultsTable
+    const module = await modulePromise;
+    displayIncludedPackages = module.displayIncludedPackages;
+    displayResultsTable = module.displayResultsTable;
 
-    originalColumns = process.stdout.columns
-    process.stdout.columns = 120
-  })
+    originalColumns = process.stdout.columns;
+    process.stdout.columns = 120;
+  });
 
   afterAll(() => {
-    process.stdout.columns = originalColumns
-  })
+    process.stdout.columns = originalColumns;
+  });
 
   test('displayIncludedPackages renders true compatibility flags as true', async () => {
     const includedPackages = [
@@ -117,14 +105,14 @@ describe('consoleTaskReports compatibility flags', () => {
           homepage: 'https://example.com',
         },
       },
-    ]
+    ];
 
-    const output = await displayIncludedPackages(includedPackages)
-    const cleanOutput = stripAnsi(output)
-    const checkmarks = cleanOutput.match(/✓/g) || []
+    const output = await displayIncludedPackages(includedPackages);
+    const cleanOutput = stripAnsi(output);
+    const checkmarks = cleanOutput.match(/✓/g) || [];
 
-    expect(checkmarks.length).toBe(3)
-  })
+    expect(checkmarks.length).toBe(3);
+  });
 
   test('displayResultsTable renders true compatibility flags as true', async () => {
     const packages = [
@@ -147,12 +135,12 @@ describe('consoleTaskReports compatibility flags', () => {
         attemptedFallbackA: false,
         attemptedFallbackB: false,
       },
-    ]
+    ];
 
-    const output = await displayResultsTable(packages)
-    const cleanOutput = stripAnsi(output)
-    const checkmarks = cleanOutput.match(/✓/g) || []
+    const output = await displayResultsTable(packages);
+    const cleanOutput = stripAnsi(output);
+    const checkmarks = cleanOutput.match(/✓/g) || [];
 
-    expect(checkmarks.length).toBe(3)
-  })
-})
+    expect(checkmarks.length).toBe(3);
+  });
+});

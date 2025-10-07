@@ -1,15 +1,16 @@
-// Global test setup
+import { beforeAll, afterAll, vi } from 'vitest';
+
+// Global test setup - Mock console methods to reduce noise in tests
 global.console = {
   ...console,
-  // Mock console.error to reduce noise in tests
-  error: jest.fn(),
-  warn: jest.fn(),
-  log: jest.fn(),
+  error: vi.fn(),
+  warn: vi.fn(),
+  log: vi.fn(),
 };
 
-// Mock process.exit to prevent Jest from exiting
+// Mock process.exit to prevent Vitest from exiting
 const originalExit = process.exit;
-process.exit = jest.fn();
+process.exit = vi.fn();
 
 // Restore after all tests
 afterAll(() => {

@@ -1,7 +1,12 @@
-describe('Import Verification Tests', () => {
-  const fs = require('fs');
-  const path = require('path');
+import { describe, test, expect } from 'vitest';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+describe('Import Verification Tests', () => {
   const keyModules = [
     { name: 'Config Utility', path: '../../config/configUtil' },
     { name: 'Constants', path: '../../utils/constants' },
@@ -74,7 +79,7 @@ describe('Import Verification Tests', () => {
       'LICENSE',
       'README.md',
       '.npmignore',
-      'jest.config.js'
+      'vitest.config.js'  // Changed from jest.config.js
     ];
 
     criticalFiles.forEach(file => {

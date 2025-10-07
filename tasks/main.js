@@ -12,6 +12,7 @@ import { processPackageVersions } from './versionProcessor/versionProcessor.js';
 import { promptUserForReportDirectory, askToContinue, } from '../prompts/prompts.js';
 import _ from 'lodash';
 import { displayResultsTable, customTablePrompt, displayFinalReports, } from '../reports/consoleTaskReports.js';
+import { shouldInstallDependencies } from './installGuard.js';
 export async function main(options) {
     const { reportsOnly } = options;
     const tasks = new Listr([
@@ -187,7 +188,7 @@ export async function main(options) {
         // Step 7: Install updated dependencies (optional)
         {
             title: 'Install updated dependencies',
-            enabled: () => options.install && !reportsOnly,
+            enabled: () => shouldInstallDependencies(options),
             task: async () => {
                 installDependencies();
             },

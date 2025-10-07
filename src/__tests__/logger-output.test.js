@@ -1,6 +1,8 @@
-const mockBoxen = jest.fn()
+import { describe, test, expect, beforeAll, beforeEach, afterAll, vi } from 'vitest';
 
-jest.mock('../../reports/styles.js', () => ({
+const mockBoxen = vi.fn();
+
+vi.mock('../../reports/styles.js', () => ({
   __esModule: true,
   styles: {
     success: (msg) => msg,
@@ -13,61 +15,61 @@ jest.mock('../../reports/styles.js', () => ({
   },
   mainTitleOptions: {},
   packageReportOptions: () => ({}),
-}))
+}));
 
-jest.mock('boxen', () => ({
+vi.mock('boxen', () => ({
   __esModule: true,
   default: mockBoxen,
-}))
+}));
 
 describe('logger output behaviour', () => {
-  let logger
-  const originalDebug = process.env.DEBUG
+  let logger;
+  const originalDebug = process.env.DEBUG;
 
   beforeAll(async () => {
-    ({ default: logger } = await import('../../reports/logger.js'))
-  })
+    ({ default: logger } = await import('../../reports/logger.js'));
+  });
 
   beforeEach(() => {
-    jest.clearAllMocks()
-    delete process.env.DEBUG
-  })
+    vi.clearAllMocks();
+    delete process.env.DEBUG;
+  });
 
   afterAll(() => {
     if (originalDebug === undefined) {
-      delete process.env.DEBUG
+      delete process.env.DEBUG;
     } else {
-      process.env.DEBUG = originalDebug
+      process.env.DEBUG = originalDebug;
     }
-  })
+  });
 
   test('error logs without DEBUG flag', () => {
-    logger.error('Test error message')
+    logger.error('Test error message');
 
-    expect(console.error).toHaveBeenCalledTimes(1)
-    const [firstCall] = console.error.mock.calls
-    expect(firstCall[0]).toContain('[ERROR]')
-  })
+    expect(console.error).toHaveBeenCalledTimes(1);
+    const [firstCall] = console.error.mock.calls;
+    expect(firstCall[0]).toContain('[ERROR]');
+  });
 
   test('warn logs without DEBUG flag', () => {
-    logger.warn('Test warning message')
+    logger.warn('Test warning message');
 
-    expect(console.warn).toHaveBeenCalledTimes(1)
-    const [firstCall] = console.warn.mock.calls
-    expect(firstCall[0]).toContain('[WARNING]')
-  })
+    expect(console.warn).toHaveBeenCalledTimes(1);
+    const [firstCall] = console.warn.mock.calls;
+    expect(firstCall[0]).toContain('[WARNING]');
+  });
 
   test('success logs without DEBUG flag', () => {
-    logger.success('Test success message')
+    logger.success('Test success message');
 
-    expect(console.log).toHaveBeenCalledTimes(1)
-    const [firstCall] = console.log.mock.calls
-    expect(firstCall[0]).toContain('[SUCCESS]')
-  })
+    expect(console.log).toHaveBeenCalledTimes(1);
+    const [firstCall] = console.log.mock.calls;
+    expect(firstCall[0]).toContain('[SUCCESS]');
+  });
 
   test('debug remains silent without DEBUG flag', () => {
-    logger.debug('Detailed debug message')
+    logger.debug('Detailed debug message');
 
-    expect(console.log).not.toHaveBeenCalled()
-  })
-})
+    expect(console.log).not.toHaveBeenCalled();
+  });
+});

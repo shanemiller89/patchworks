@@ -1,7 +1,9 @@
-const mockError = jest.fn()
-const mockSuccess = jest.fn()
+import { describe, test, expect, beforeEach, vi } from 'vitest';
 
-jest.doMock('../../reports/logger.js', () => ({
+const mockError = vi.fn();
+const mockSuccess = vi.fn();
+
+vi.mock('../../reports/logger.js', () => ({
   __esModule: true,
   default: {
     success: mockSuccess,
@@ -9,67 +11,63 @@ jest.doMock('../../reports/logger.js', () => ({
   },
   success: mockSuccess,
   error: mockError,
-  warn: jest.fn(),
-  info: jest.fn(),
-  debug: jest.fn(),
-  message: jest.fn(),
-  titleHeading: jest.fn(),
-  heading: jest.fn(),
-  excluding: jest.fn(),
-  fallback: jest.fn(),
-  separator: jest.fn(),
-  skipping: jest.fn(),
-  evaluating: jest.fn(),
-  logReviewState: jest.fn(),
-  packageReport: jest.fn(),
-  patchworks: jest.fn(),
-}))
+  warn: vi.fn(),
+  info: vi.fn(),
+  debug: vi.fn(),
+  message: vi.fn(),
+  titleHeading: vi.fn(),
+  heading: vi.fn(),
+  excluding: vi.fn(),
+  fallback: vi.fn(),
+  separator: vi.fn(),
+  skipping: vi.fn(),
+  evaluating: vi.fn(),
+  logReviewState: vi.fn(),
+  packageReport: vi.fn(),
+  patchworks: vi.fn(),
+}));
 
-jest.doMock('../../analysis/analyzeLogData.js', () => ({
+vi.mock('../../analysis/analyzeLogData.js', () => ({
   __esModule: true,
-  parseIncludedPackage: jest.fn(),
-}))
+  parseIncludedPackage: vi.fn(),
+}));
 
-jest.doMock('../../versionLogs/fetchChangelog.js', () => ({
+vi.mock('../../versionLogs/fetchChangelog.js', () => ({
   __esModule: true,
-  fetchChangelog: jest.fn(),
-}))
+  fetchChangelog: vi.fn(),
+}));
 
-jest.doMock('../../versionLogs/fetchCommits.js', () => ({
+vi.mock('../../versionLogs/fetchCommits.js', () => ({
   __esModule: true,
-  fetchCommits: jest.fn(),
-}))
+  fetchCommits: vi.fn(),
+}));
 
-jest.doMock('../../versionLogs/fetchReleaseNotes.js', () => ({
+vi.mock('../../versionLogs/fetchReleaseNotes.js', () => ({
   __esModule: true,
-  fetchReleaseNotes: jest.fn(),
-}))
+  fetchReleaseNotes: vi.fn(),
+}));
 
-jest.doMock('../../reports/generateReports.js', () => ({
+vi.mock('../../reports/generateReports.js', () => ({
   __esModule: true,
-  bundleReports: jest.fn(),
-}))
+  bundleReports: vi.fn(),
+}));
 
-jest.mock(
-  '../../utils/updatingHelpers.js',
-  () => ({
-    __esModule: true,
-    installDependencies: jest.fn(),
-    writeChanges: jest.fn(),
-  }),
-  { virtual: true },
-)
-
-jest.doMock('../../tasks/versionProcessor/versionProcessor.js', () => ({
+vi.mock('../../utils/updatingHelpers.js', () => ({
   __esModule: true,
-  processPackageVersions: jest.fn(),
-}))
+  installDependencies: vi.fn(),
+  writeChanges: vi.fn(),
+}));
 
-const mockRun = jest.fn(() => Promise.reject(new Error('Task failure')))
-
-jest.unstable_mockModule('listr2', () => ({
+vi.mock('../../tasks/versionProcessor/versionProcessor.js', () => ({
   __esModule: true,
-  Listr: jest.fn(() => ({
+  processPackageVersions: vi.fn(),
+}));
+
+const mockRun = vi.fn(() => Promise.reject(new Error('Task failure')));
+
+vi.mock('listr2', () => ({
+  __esModule: true,
+  Listr: vi.fn(() => ({
     run: mockRun,
   })),
   PRESET_TIMER: {},
@@ -77,37 +75,29 @@ jest.unstable_mockModule('listr2', () => ({
     red: (input) => input,
     green: (input) => input,
   },
-}))
+}));
 
-jest.mock(
-  '../../prompts/prompts.js',
-  () => ({
-    __esModule: true,
-    promptUserForReportDirectory: jest.fn(),
-    askToContinue: jest.fn(),
-  }),
-  { virtual: true },
-)
+vi.mock('../../prompts/prompts.js', () => ({
+  __esModule: true,
+  promptUserForReportDirectory: vi.fn(),
+  askToContinue: vi.fn(),
+}));
 
-jest.mock(
-  '../../reports/consoleTaskReports.js',
-  () => ({
-    __esModule: true,
-    displayResultsTable: jest.fn(),
-    customTablePrompt: jest.fn(),
-    displayFinalReports: jest.fn(),
-  }),
-  { virtual: true },
-)
+vi.mock('../../reports/consoleTaskReports.js', () => ({
+  __esModule: true,
+  displayResultsTable: vi.fn(),
+  customTablePrompt: vi.fn(),
+  displayFinalReports: vi.fn(),
+}));
 
 describe('workflow failure handling', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-    delete process.env.DEBUG
-  })
+    vi.clearAllMocks();
+    delete process.env.DEBUG;
+  });
 
   test('logs an error when tasks reject without DEBUG', async () => {
-    const { main } = await import('../../tasks/main.ts')
+    const { main } = await import('../../tasks/main.ts');
 
     await main({
       reportsOnly: false,
@@ -121,11 +111,11 @@ describe('workflow failure handling', () => {
       excludeRepoless: false,
       debug: false,
       showExcluded: false,
-    })
+    });
 
-    expect(mockSuccess).not.toHaveBeenCalled()
+    expect(mockSuccess).not.toHaveBeenCalled();
     expect(mockError).toHaveBeenCalledWith(
       expect.stringContaining('Workflow failed'),
-    )
-  })
-})
+    );
+  });
+});

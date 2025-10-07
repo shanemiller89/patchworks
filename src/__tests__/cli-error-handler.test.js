@@ -1,43 +1,45 @@
-const mockLoggerError = jest.fn()
+import { describe, test, expect, beforeAll, beforeEach, vi } from 'vitest';
 
-let createOutputErrorHandler
+const mockLoggerError = vi.fn();
+
+let createOutputErrorHandler;
 
 beforeAll(async () => {
-  jest.resetModules()
+  vi.resetModules();
 
-  jest.doMock('../../reports/logger.js', () => ({
+  vi.mock('../../reports/logger.js', () => ({
     __esModule: true,
     default: {
       error: mockLoggerError,
-      warn: jest.fn(),
-      success: jest.fn(),
+      warn: vi.fn(),
+      success: vi.fn(),
     },
     error: mockLoggerError,
-    warn: jest.fn(),
-    success: jest.fn(),
-  }))
+    warn: vi.fn(),
+    success: vi.fn(),
+  }));
 
-  ;({ createOutputErrorHandler } = await import('../cli/errorHandler.ts'))
-})
+  ({ createOutputErrorHandler } = await import('../cli/errorHandler.ts'));
+});
 
 describe('createOutputErrorHandler', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-    delete process.env.DEBUG
-  })
+    vi.clearAllMocks();
+    delete process.env.DEBUG;
+  });
 
   test('logs errors via logger and triggers help', () => {
-    const help = jest.fn()
-    const write = jest.fn()
-    const handler = createOutputErrorHandler({ help })
+    const help = vi.fn();
+    const write = vi.fn();
+    const handler = createOutputErrorHandler({ help });
 
-    handler('  error: unknown command invalid\n', write)
+    handler('  error: unknown command invalid\n', write);
 
-    expect(write).toHaveBeenCalledWith('')
+    expect(write).toHaveBeenCalledWith('');
     expect(mockLoggerError).toHaveBeenCalledWith(
       'error: unknown command invalid',
-    )
-    expect(help).toHaveBeenCalled()
-    expect(process.env.DEBUG).toBeUndefined()
-  })
-})
+    );
+    expect(help).toHaveBeenCalled();
+    expect(process.env.DEBUG).toBeUndefined();
+  });
+});

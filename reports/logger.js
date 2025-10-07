@@ -173,9 +173,7 @@ export function info(message) {
  * @param {string} message - The success message.
  */
 export function success(message) {
-  if (process.env.DEBUG) {
-    console.log(`${styles.success('[SUCCESS]')} ${message}`)
-  }
+  console.log(`${styles.success('[SUCCESS]')} ${message}`)
 }
 
 /**
@@ -183,9 +181,7 @@ export function success(message) {
  * @param {string} message - The warning message.
  */
 export function warn(message) {
-  if (process.env.DEBUG) {
-    console.warn(`${styles.warning('[WARNING]')} ${message}`)
-  }
+  console.warn(`${styles.warning('[WARNING]')} ${message}`)
 }
 
 /**
@@ -193,9 +189,7 @@ export function warn(message) {
  * @param {string} message - The error message.
  */
 export function error(message) {
-  if (process.env.DEBUG) {
-    console.error(`${styles.error('[ERROR]')} ${message}`)
-  }
+  console.error(`${styles.error('[ERROR]')} ${message}`)
 }
 
 /**

@@ -3,37 +3,24 @@ describe('Import Verification Tests', () => {
   const path = require('path');
 
   const keyModules = [
-    { name: 'Config Utility', path: '../../config/configUtil.js' },
-    { name: 'Constants', path: '../../utils/constants.js' },
-    { name: 'Alignment Helpers', path: '../../utils/alignmentHelpers.js' },
-    { name: 'Analysis - Categorize Logs', path: '../../analysis/categorizeLogs.js' },
-    { name: 'Analysis - Compute TFIDF', path: '../../analysis/computeTFIDFRanking.js' },
-    { name: 'Prompts - Base Toggle', path: '../../prompts/baseToggle.js' },
-    { name: 'Version Logs - Fetch Changelog', path: '../../versionLogs/fetchChangelog.js' }
+    { name: 'Config Utility', path: '../../config/configUtil' },
+    { name: 'Constants', path: '../../utils/constants' },
+    { name: 'Alignment Helpers', path: '../../utils/alignmentHelpers' },
+    { name: 'Analysis - Categorize Logs', path: '../../analysis/categorizeLogs' },
+    { name: 'Analysis - Compute TFIDF', path: '../../analysis/computeTFIDFRanking' },
+    { name: 'Prompts - Base Toggle', path: '../../prompts/baseToggle' },
+    { name: 'Version Logs - Fetch Changelog', path: '../../versionLogs/fetchChangelog' }
   ];
-
-  const resolveWithFallback = (modulePath) => {
-    const resolvedPath = path.resolve(__dirname, modulePath);
-
-    if (fs.existsSync(resolvedPath)) {
-      return resolvedPath;
-    }
-
-    if (modulePath.endsWith('.js')) {
-      const tsPath = resolvedPath.replace(/\.js$/, '.ts');
-      if (fs.existsSync(tsPath)) {
-        return tsPath;
-      }
-    }
-
-    return resolvedPath;
-  };
 
   describe('File existence validation', () => {
     keyModules.forEach(({ name, path: modulePath }) => {
       test(`${name} file should exist`, () => {
-        const resolvedPath = resolveWithFallback(modulePath);
-        expect(fs.existsSync(resolvedPath)).toBe(true);
+        const resolvedPath = path.resolve(__dirname, modulePath);
+        const extensions = ['.ts', '.js', '.mjs', '.cjs'];
+        const fileExists = extensions.some(extension =>
+          fs.existsSync(`${resolvedPath}${extension}`)
+        );
+        expect(fileExists).toBe(true);
       });
     });
   });

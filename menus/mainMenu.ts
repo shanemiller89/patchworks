@@ -9,6 +9,7 @@ import { MAIN_TITLE } from '../utils/constants.js'
 import readline from 'readline'
 import { promptUserForLevel } from '../prompts/prompts.js'
 import { FinalOptions, Level } from '../src/cli/index.js'
+import { resolveBooleanOption } from '../src/cli/booleanOption.js'
 
 const DOUBLE_LINE =
   '======================================================================================================================'
@@ -33,14 +34,16 @@ export async function renderMainMenu(options: MenuOptions): Promise<void> {
   // Read configuration from the config file
   const config: PatchworksConfig | null = (await readConfig()) || null
 
-  const {
-    level = options.level || config?.level || 'minor',
-    limit = options.limit || config?.limit || null,
-    levelScope = options.levelScope || config?.levelScope || 'strict',
-    summary = options.summary || config?.summary || false,
-    showExcluded = options.showExcluded || config?.showExcluded || false,
-    install = options.install || config?.install || true,
-  } = options
+  const level = options.level ?? config?.level ?? 'minor'
+  const limit = options.limit ?? config?.limit ?? null
+  const levelScope = options.levelScope ?? config?.levelScope ?? 'strict'
+  const summary = resolveBooleanOption(options.summary, config?.summary, false)
+  const showExcluded = resolveBooleanOption(
+    options.showExcluded,
+    config?.showExcluded,
+    false,
+  )
+  const install = resolveBooleanOption(options.install, config?.install, true)
 
   let selectedIndex: number = 0
 

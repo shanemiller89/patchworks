@@ -59,7 +59,6 @@ describe('CLI module structure', () => {
       '.cjs',
       '.ts',
     ]);
-
     expect(fs.existsSync(binPath)).toBe(true);
 
     const stats = fs.statSync(binPath);

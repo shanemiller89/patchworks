@@ -7,6 +7,7 @@ import logger from '../../reports/logger.js'
 import { renderMainMenu } from '../../menus/mainMenu.js'
 import { readConfig, PatchworksConfig } from '../../config/configUtil.js'
 import { main } from '../../tasks/main.js'
+import { resolveBooleanOption } from './booleanOption.js'
 
 // Type definitions
 export type Level = 'patch' | 'minor' | 'major'
@@ -89,18 +90,18 @@ const sharedOptions: Option[] = [
     }
     return value as 'strict' | 'cascade'
   }).default('strict'),
-  new Option('-s, --summary', 'Generate a summary report').default(false),
-  new Option('-k, --skipped', 'Show skipped packages in the output').default(false),
+  new Option('-s, --summary', 'Generate a summary report'),
+  new Option('-k, --skipped', 'Show skipped packages in the output'),
   new Option(
     '--exclude-repoless',
     'Exclude packages without repositories'
-  ).default(false),
-  new Option('-d, --debug', 'Show verbose debug consoles').default(false),
+  ),
+  new Option('-d, --debug', 'Show verbose debug consoles'),
   new Option(
     '--show-excluded',
     'Show excluded packages in the console output'
-  ).default(false),
-  new Option('-i, --install', 'Install dependencies after processing').default(false),
+  ),
+  new Option('-i, --install', 'Install dependencies after processing'),
 ]
 
 export default function (): void {
@@ -132,17 +133,24 @@ export default function (): void {
       const config: PatchworksConfig | null = (await readConfig()) || null
 
       const finalOptions: FinalOptions = {
-        level: level || config?.level || null,
-        limit: options.limit || config?.limit || null,
-        levelScope: options.levelScope || config?.levelScope || 'strict',
-        summary: options.summary || config?.summary || false,
-        skipped: options.skipped || config?.skipped || false,
-        write: options.write || config?.write || false,
-        install: options.install || config?.install || true,
-        excludeRepoless:
-          options.excludeRepoless || config?.excludeRepoless || false,
-        debug: options.debug || config?.debug || false,
-        showExcluded: options.showExcluded || config?.showExcluded || false,
+        level: level ?? config?.level ?? null,
+        limit: options.limit ?? config?.limit ?? null,
+        levelScope: options.levelScope ?? config?.levelScope ?? 'strict',
+        summary: resolveBooleanOption(options.summary, config?.summary, false),
+        skipped: resolveBooleanOption(options.skipped, config?.skipped, false),
+        write: resolveBooleanOption(options.write, config?.write, false),
+        install: resolveBooleanOption(options.install, config?.install, true),
+        excludeRepoless: resolveBooleanOption(
+          options.excludeRepoless,
+          config?.excludeRepoless,
+          false,
+        ),
+        debug: resolveBooleanOption(options.debug, config?.debug, false),
+        showExcluded: resolveBooleanOption(
+          options.showExcluded,
+          config?.showExcluded,
+          false,
+        ),
       }
 
       if (finalOptions.debug) {
@@ -169,17 +177,24 @@ export default function (): void {
       const config: PatchworksConfig | null = (await readConfig()) || null
 
       const finalOptions: FinalOptions = {
-        level: level || config?.level || 'minor',
-        limit: options.limit || config?.limit || null,
-        levelScope: options.levelScope || config?.levelScope || 'strict',
-        summary: options.summary || config?.summary || false,
-        skipped: options.skipped || config?.skipped || false,
-        write: options.write || config?.write || false,
-        install: options.install || config?.install || false,
-        excludeRepoless:
-          options.excludeRepoless || config?.excludeRepoless || false,
-        debug: options.debug || config?.debug || false,
-        showExcluded: options.showExcluded || config?.showExcluded || false,
+        level: level ?? config?.level ?? 'minor',
+        limit: options.limit ?? config?.limit ?? null,
+        levelScope: options.levelScope ?? config?.levelScope ?? 'strict',
+        summary: resolveBooleanOption(options.summary, config?.summary, false),
+        skipped: resolveBooleanOption(options.skipped, config?.skipped, false),
+        write: resolveBooleanOption(options.write, config?.write, false),
+        install: resolveBooleanOption(options.install, config?.install, false),
+        excludeRepoless: resolveBooleanOption(
+          options.excludeRepoless,
+          config?.excludeRepoless,
+          false,
+        ),
+        debug: resolveBooleanOption(options.debug, config?.debug, false),
+        showExcluded: resolveBooleanOption(
+          options.showExcluded,
+          config?.showExcluded,
+          false,
+        ),
       }
 
       if (finalOptions.debug) {
@@ -209,17 +224,24 @@ export default function (): void {
       const config: PatchworksConfig | null = (await readConfig()) || null
 
       const finalOptions: FinalOptions = {
-        level: level || config?.level || 'minor',
-        limit: options.limit || config?.limit || null,
-        levelScope: options.levelScope || config?.levelScope || 'strict',
-        summary: options.summary || config?.summary || false,
-        skipped: options.skipped || config?.skipped || false,
-        write: options.write || config?.write || false,
-        install: options.install || config?.install || true,
-        excludeRepoless:
-          options.excludeRepoless || config?.excludeRepoless || false,
-        debug: options.debug || config?.debug || false,
-        showExcluded: options.showExcluded || config?.showExcluded || false,
+        level: level ?? config?.level ?? 'minor',
+        limit: options.limit ?? config?.limit ?? null,
+        levelScope: options.levelScope ?? config?.levelScope ?? 'strict',
+        summary: resolveBooleanOption(options.summary, config?.summary, false),
+        skipped: resolveBooleanOption(options.skipped, config?.skipped, false),
+        write: resolveBooleanOption(options.write, config?.write, false),
+        install: resolveBooleanOption(options.install, config?.install, true),
+        excludeRepoless: resolveBooleanOption(
+          options.excludeRepoless,
+          config?.excludeRepoless,
+          false,
+        ),
+        debug: resolveBooleanOption(options.debug, config?.debug, false),
+        showExcluded: resolveBooleanOption(
+          options.showExcluded,
+          config?.showExcluded,
+          false,
+        ),
       }
 
       if (finalOptions.debug) {

@@ -1,12 +1,25 @@
-import { main } from '../../../tasks/main.js';
+import { renderMainMenu } from '../../../menus/mainMenu.js';
 import { readConfig } from '../../../config/configUtil.js';
 import logger from '../../../reports/logger.js';
 import { resolveBooleanOption } from '../booleanOption.js';
 
-export default async function (level, options) {
+interface CommandOptions {
+  limit?: number;
+  levelScope?: 'strict' | 'cascade';
+  summary?: boolean;
+  skipped?: boolean;
+  install?: boolean;
+  excludeRepoless?: boolean;
+  showExcluded?: boolean;
+}
+
+export default async function (
+  level: 'patch' | 'minor' | 'major' | null | undefined,
+  options: CommandOptions
+): Promise<void> {
   const config = (await readConfig()) || {};
   const finalOptions = {
-    level: level ?? config.level ?? 'minor',
+    level: level ?? config.level ?? null,
     limit: options.limit ?? config.limit ?? null,
     levelScope: options.levelScope ?? config.levelScope ?? 'strict',
     summary: resolveBooleanOption(options.summary, config.summary, false),
@@ -15,17 +28,17 @@ export default async function (level, options) {
     excludeRepoless: resolveBooleanOption(
       options.excludeRepoless,
       config.excludeRepoless,
-      false,
+      false
     ),
     showExcluded: resolveBooleanOption(
       options.showExcluded,
       config.showExcluded,
-      false,
+      false
     ),
   };
 
   try {
-    await main(finalOptions);
+    await renderMainMenu(finalOptions);
   } catch (err) {
     logger.error(err);
     process.exit(1);

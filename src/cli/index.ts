@@ -4,6 +4,7 @@ import { Argument, Command, Option } from 'commander'
 import inquirer from 'inquirer'
 import fileSelector from 'inquirer-file-selector'
 import logger from '../../reports/logger.js'
+import { createOutputErrorHandler } from './errorHandler.js'
 import { renderMainMenu } from '../../menus/mainMenu.js'
 import { readConfig, PatchworksConfig } from '../../config/configUtil.js'
 import { main } from '../../tasks/main.js'
@@ -233,11 +234,7 @@ export default function (): void {
 
   // Configure custom output for errors
   program.configureOutput({
-    outputError: (str: string, write: (str: string) => void) => {
-      write('')
-      logger.error(str.trim()) // Use logger for errors
-      program.help() // Show help menu
-    },
+    outputError: createOutputErrorHandler(program),
   })
 
   program.parse(process.argv)

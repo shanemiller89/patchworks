@@ -1,7 +1,7 @@
 export default {
   testEnvironment: 'node',
   transform: {
-    '^.+\\.js$': 'babel-jest',
+    '^.+\\.[tj]s$': 'babel-jest',
   },
   transformIgnorePatterns: [
     'node_modules/(?!(inquirer|@inquirer|inquirer-file-selector|chalk|boxen|ora)/)',

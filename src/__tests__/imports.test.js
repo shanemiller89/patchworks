@@ -12,10 +12,27 @@ describe('Import Verification Tests', () => {
     { name: 'Version Logs - Fetch Changelog', path: '../../versionLogs/fetchChangelog.js' }
   ];
 
+  const resolveWithFallback = (modulePath) => {
+    const resolvedPath = path.resolve(__dirname, modulePath);
+
+    if (fs.existsSync(resolvedPath)) {
+      return resolvedPath;
+    }
+
+    if (modulePath.endsWith('.js')) {
+      const tsPath = resolvedPath.replace(/\.js$/, '.ts');
+      if (fs.existsSync(tsPath)) {
+        return tsPath;
+      }
+    }
+
+    return resolvedPath;
+  };
+
   describe('File existence validation', () => {
     keyModules.forEach(({ name, path: modulePath }) => {
       test(`${name} file should exist`, () => {
-        const resolvedPath = path.resolve(__dirname, modulePath);
+        const resolvedPath = resolveWithFallback(modulePath);
         expect(fs.existsSync(resolvedPath)).toBe(true);
       });
     });

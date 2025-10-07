@@ -39,7 +39,7 @@ export async function renderMainMenu(options: MenuOptions): Promise<void> {
     levelScope = options.levelScope || config?.levelScope || 'strict',
     summary = options.summary || config?.summary || false,
     showExcluded = options.showExcluded || config?.showExcluded || false,
-    install = options.install || config?.install || true,
+    install = options.install ?? config?.install ?? false,
   } = options
 
   let selectedIndex: number = 0

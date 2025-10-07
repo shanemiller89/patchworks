@@ -138,7 +138,7 @@ export default function (): void {
         summary: options.summary || config?.summary || false,
         skipped: options.skipped || config?.skipped || false,
         write: options.write || config?.write || false,
-        install: options.install || config?.install || true,
+        install: options.install ?? config?.install ?? false,
         excludeRepoless:
           options.excludeRepoless || config?.excludeRepoless || false,
         debug: options.debug || config?.debug || false,
@@ -214,7 +214,7 @@ export default function (): void {
         summary: options.summary || config?.summary || false,
         skipped: options.skipped || config?.skipped || false,
         write: options.write || config?.write || false,
-        install: options.install || config?.install || true,
+        install: options.install ?? config?.install ?? false,
         excludeRepoless:
           options.excludeRepoless || config?.excludeRepoless || false,
         debug: options.debug || config?.debug || false,

@@ -86,19 +86,19 @@ export function displayIncludedPackages(includedPackages) {
       { value: pkg.metadata.updatingDifficulty },
       { value: pkg.metadata.githubUrl },
       {
-        value: !![false, 'UNKNOWN', 'SKIPPED'].includes(
+        value: ![false, 'UNKNOWN', 'SKIPPED'].includes(
           pkg.metadata.releaseNotesCompatible,
         ),
         type: 'boolean',
       },
       {
-        value: !![false, 'UNKNOWN', 'SKIPPED'].includes(
+        value: ![false, 'UNKNOWN', 'SKIPPED'].includes(
           pkg.metadata.fallbackACompatible,
         ),
         type: 'boolean',
       },
       {
-        value: !![false, 'UNKNOWN', 'SKIPPED'].includes(
+        value: ![false, 'UNKNOWN', 'SKIPPED'].includes(
           pkg.metadata.fallbackBCompatible,
         ),
         type: 'boolean',
@@ -189,19 +189,19 @@ export function displayResultsTable(packages) {
       { value: pkg.metadata.githubUrl },
       { value: pkg.metadata.fallbackUrl },
       {
-        value: [false, UNKNOWN, SKIPPED].includes(
+        value: ![false, UNKNOWN, SKIPPED].includes(
           pkg.metadata.releaseNotesCompatible,
         ),
         type: 'boolean',
       },
       {
-        value: [false, UNKNOWN, SKIPPED].includes(
+        value: ![false, UNKNOWN, SKIPPED].includes(
           pkg.metadata.fallbackACompatible,
         ),
         type: 'boolean',
       },
       {
-        value: [false, UNKNOWN, SKIPPED].includes(
+        value: ![false, UNKNOWN, SKIPPED].includes(
           pkg.metadata.fallbackBCompatible,
         ),
         type: 'boolean',

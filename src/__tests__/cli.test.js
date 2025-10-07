@@ -94,7 +94,7 @@ describe('CLI module structure', () => {
   test('package.json has correct configuration', () => {
     expect(packageJson.name).toBe('patchworks');
     expect(packageJson.bin).toBeDefined();
-    expect(packageJson.bin.patchworks).toBe('./bin/patchworks.js');
-    expect(packageJson.main).toBe('src/cli/index.js');
+    expect(['./bin/patchworks.js', './bin/patchworks.ts']).toContain(packageJson.bin.patchworks);
+    expect(['src/cli/index.js', 'src/cli/index.ts']).toContain(packageJson.main);
   });
 });

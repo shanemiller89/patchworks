@@ -1,3 +1,5 @@
+const { spawnSync } = require('child_process');
+
 describe('CLI module structure', () => {
   test('CLI module exists and has correct structure', () => {
     // Test that the CLI module can be required
@@ -13,13 +15,25 @@ describe('CLI module structure', () => {
     const path = require('path');
     const fs = require('fs');
     const binPath = path.join(__dirname, '../../bin/patchworks.js');
-    
+
     expect(fs.existsSync(binPath)).toBe(true);
-    
+
     const stats = fs.statSync(binPath);
     expect(stats.isFile()).toBe(true);
     // Check if file has execute permissions
     expect(stats.mode & parseInt('111', 8)).toBeGreaterThan(0);
+  });
+
+  test('binary starts without syntax errors', () => {
+    const path = require('path');
+    const binPath = path.join(__dirname, '../../bin/patchworks.js');
+
+    const result = spawnSync('node', [binPath, '--help'], {
+      encoding: 'utf8',
+    });
+
+    expect(result.error).toBeUndefined();
+    expect(result.status).toBe(0);
   });
 
   test('package.json has correct configuration', () => {

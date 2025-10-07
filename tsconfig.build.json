@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "allowJs": false,
+    "checkJs": false,
+    "outDir": "./",
+    "rootDir": "./",
+    "declaration": false,
+    "emitDeclarationOnly": false
+  },
+  "include": [
+    "bin/**/*.ts",
+    "config/**/*.ts",
+    "menus/**/*.ts",
+    "prompts/**/*.ts",
+    "reports/**/*.ts",
+    "src/**/*.ts",
+    "tasks/**/*.ts",
+    "utils/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.test.ts"
+  ]
+}

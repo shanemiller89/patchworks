@@ -4,6 +4,7 @@ import {
   useKeypress,
   usePrefix,
   useState,
+  type KeypressEvent,
 } from '@inquirer/core'
 import chalk from 'chalk'
 
@@ -12,11 +13,6 @@ export interface ToggleConfig {
   active?: string
   inactive?: string
   default?: boolean
-}
-
-export interface KeyEvent {
-  name: string
-  [key: string]: any
 }
 
 // Define a custom toggle prompt
@@ -30,7 +26,7 @@ export const customTogglePrompt = createPrompt<boolean, ToggleConfig>((config, d
   const prefix = usePrefix({ status })
 
   // Handle keypress events
-  useKeypress((key: KeyEvent) => {
+  useKeypress((key: KeypressEvent) => {
     if (isEnterKey(key)) {
       setStatus('done')
       done(value === activeLabel)

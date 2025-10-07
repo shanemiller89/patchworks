@@ -3,7 +3,7 @@ describe('CLI module structure', () => {
     // Test that the CLI module can be required
     expect(() => {
       const path = require('path');
-      const cliPath = path.join(__dirname, '../cli/index.js');
+      const cliPath = path.join(__dirname, '../cli/index.ts');
       const fs = require('fs');
       expect(fs.existsSync(cliPath)).toBe(true);
     }).not.toThrow();
@@ -12,7 +12,7 @@ describe('CLI module structure', () => {
   test('binary file exists and is executable', () => {
     const path = require('path');
     const fs = require('fs');
-    const binPath = path.join(__dirname, '../../bin/patchworks.js');
+    const binPath = path.join(__dirname, '../../bin/patchworks.ts');
     
     expect(fs.existsSync(binPath)).toBe(true);
     
@@ -32,7 +32,7 @@ describe('CLI module structure', () => {
     const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
     expect(packageJson.name).toBe('patchworks');
     expect(packageJson.bin).toBeDefined();
-    expect(packageJson.bin.patchworks).toBe('./bin/patchworks.js');
-    expect(packageJson.main).toBe('src/cli/index.js');
+    expect(packageJson.bin.patchworks).toBe('./bin/patchworks.ts');
+    expect(packageJson.main).toBe('src/cli/index.ts');
   });
 });

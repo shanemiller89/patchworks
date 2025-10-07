@@ -10,7 +10,7 @@ export default async function (level, options) {
     levelScope: options.levelScope || config.levelScope || 'strict',
     summary: options.summary || config.summary || false,
     skipped: options.skipped || config.skipped || false,
-    install: options.install || config.install || false,
+    install: options.install ?? (config.install ?? true),
     excludeRepoless: options.excludeRepoless || config.excludeRepoless || false,
     showExcluded: options.showExcluded || config.showExcluded || false,
   };

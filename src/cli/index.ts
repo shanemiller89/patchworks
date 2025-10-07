@@ -6,6 +6,7 @@ import fileSelector from 'inquirer-file-selector'
 import logger from '../../reports/logger.js'
 import { renderMainMenu } from '../../menus/mainMenu.js'
 import { readConfig, PatchworksConfig } from '../../config/configUtil.js'
+import { resolveInstallFlag } from './installOption.js'
 import { main } from '../../tasks/main.js'
 
 // Type definitions
@@ -100,7 +101,7 @@ const sharedOptions: Option[] = [
     '--show-excluded',
     'Show excluded packages in the console output'
   ).default(false),
-  new Option('-i, --install', 'Install dependencies after processing').default(false),
+  new Option('-i, --install', 'Install dependencies after processing'),
 ]
 
 export default function (): void {
@@ -138,7 +139,7 @@ export default function (): void {
         summary: options.summary || config?.summary || false,
         skipped: options.skipped || config?.skipped || false,
         write: options.write || config?.write || false,
-        install: options.install || config?.install || true,
+        install: resolveInstallFlag(options.install, config?.install),
         excludeRepoless:
           options.excludeRepoless || config?.excludeRepoless || false,
         debug: options.debug || config?.debug || false,
@@ -214,7 +215,7 @@ export default function (): void {
         summary: options.summary || config?.summary || false,
         skipped: options.skipped || config?.skipped || false,
         write: options.write || config?.write || false,
-        install: options.install || config?.install || true,
+        install: resolveInstallFlag(options.install, config?.install),
         excludeRepoless:
           options.excludeRepoless || config?.excludeRepoless || false,
         debug: options.debug || config?.debug || false,

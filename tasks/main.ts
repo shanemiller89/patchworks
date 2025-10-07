@@ -20,6 +20,7 @@ import {
   displayFinalReports,
 } from '../reports/consoleTaskReports.js'
 import { FinalOptions } from '../src/cli/index.js'
+import { shouldInstallDependencies } from './installGuard.js'
 
 export interface TaskContext {
   reportDir?: string
@@ -240,7 +241,7 @@ export async function main(options: FinalOptions): Promise<void> {
       // Step 7: Install updated dependencies (optional)
       {
         title: 'Install updated dependencies',
-        enabled: () => options.install && !reportsOnly,
+        enabled: () => shouldInstallDependencies(options),
         task: async () => {
           installDependencies()
         },

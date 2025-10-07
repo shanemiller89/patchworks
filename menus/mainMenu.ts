@@ -8,7 +8,8 @@ import { generateConfig, readConfig, PatchworksConfig } from '../config/configUt
 import { MAIN_TITLE } from '../utils/constants.js'
 import readline from 'readline'
 import { promptUserForLevel } from '../prompts/prompts.js'
-import { FinalOptions, Level } from '../src/cli/index.js'
+import type { FinalOptions, Level } from '../src/cli/index.js'
+import { resolveInstallFlag } from '../src/cli/installOption.js'
 
 const DOUBLE_LINE =
   '======================================================================================================================'
@@ -39,8 +40,9 @@ export async function renderMainMenu(options: MenuOptions): Promise<void> {
     levelScope = options.levelScope || config?.levelScope || 'strict',
     summary = options.summary || config?.summary || false,
     showExcluded = options.showExcluded || config?.showExcluded || false,
-    install = options.install || config?.install || true,
   } = options
+
+  const install = resolveInstallFlag(options.install, config?.install)
 
   let selectedIndex: number = 0
 

@@ -3,12 +3,12 @@ describe('Import Verification Tests', () => {
   const path = require('path');
 
   const keyModules = [
-    { name: 'Config Utility', path: '../../config/configUtil.js' },
-    { name: 'Constants', path: '../../utils/constants.js' },
-    { name: 'Alignment Helpers', path: '../../utils/alignmentHelpers.js' },
+    { name: 'Config Utility', path: '../../config/configUtil.ts' },
+    { name: 'Constants', path: '../../utils/constants.ts' },
+    { name: 'Alignment Helpers', path: '../../utils/alignmentHelpers.ts' },
     { name: 'Analysis - Categorize Logs', path: '../../analysis/categorizeLogs.js' },
     { name: 'Analysis - Compute TFIDF', path: '../../analysis/computeTFIDFRanking.js' },
-    { name: 'Prompts - Base Toggle', path: '../../prompts/baseToggle.js' },
+    { name: 'Prompts - Base Toggle', path: '../../prompts/baseToggle.ts' },
     { name: 'Version Logs - Fetch Changelog', path: '../../versionLogs/fetchChangelog.js' }
   ];
 

@@ -82,6 +82,9 @@ jobs:
     - name: Install dependencies
       run: npm ci
       
+    - name: Build project
+      run: npm run build
+      
     - name: Check package validity
       run: npm pack --dry-run
       
@@ -101,7 +104,7 @@ jobs:
         
     - name: Check file permissions
       run: |
-        if [[ ! -x bin/patchworks.js ]]; then
+        if [[ ! -x dist/bin/patchworks.js ]]; then
           echo "❌ Binary file is not executable"
           exit 1
         fi

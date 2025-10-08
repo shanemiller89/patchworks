@@ -24,6 +24,7 @@ export interface CLIOptions {
   excludeRepoless?: boolean
   debug?: boolean
   showExcluded?: boolean
+  aiSummary?: boolean
 }
 
 export interface FinalOptions {
@@ -37,6 +38,7 @@ export interface FinalOptions {
   excludeRepoless: boolean
   debug: boolean
   showExcluded: boolean
+  aiSummary: boolean
   reportsOnly?: boolean
 }
 
@@ -104,6 +106,10 @@ const sharedOptions: Option[] = [
     'Show excluded packages in the console output'
   ),
   new Option('-i, --install', 'Install dependencies after processing'),
+  new Option(
+    '--ai-summary',
+    'Generate AI-powered critical findings summary (requires API key in config)'
+  ),
 ]
 
 export default function (): void {
@@ -131,6 +137,7 @@ export default function (): void {
     .addOption(sharedOptions[5])
     .addOption(sharedOptions[6])
     .addOption(sharedOptions[7])
+    .addOption(sharedOptions[8])
     .action(async (level: Level | undefined, options: CLIOptions) => {
       const config: PatchworksConfig | null = (await readConfig()) || null
 
@@ -151,6 +158,11 @@ export default function (): void {
         showExcluded: resolveBooleanOption(
           options.showExcluded,
           config?.showExcluded,
+          false,
+        ),
+        aiSummary: resolveBooleanOption(
+          options.aiSummary,
+          config?.ai?.enabled,
           false,
         ),
       }
@@ -175,6 +187,7 @@ export default function (): void {
     .addOption(sharedOptions[4])
     .addOption(sharedOptions[5])
     .addOption(sharedOptions[6])
+    .addOption(sharedOptions[8])
     .action(async (level: Level, options: CLIOptions) => {
       const config: PatchworksConfig | null = (await readConfig()) || null
 
@@ -195,6 +208,11 @@ export default function (): void {
         showExcluded: resolveBooleanOption(
           options.showExcluded,
           config?.showExcluded,
+          false,
+        ),
+        aiSummary: resolveBooleanOption(
+          options.aiSummary,
+          config?.ai?.enabled,
           false,
         ),
       }
@@ -222,6 +240,7 @@ export default function (): void {
     .addOption(sharedOptions[5])
     .addOption(sharedOptions[6])
     .addOption(sharedOptions[7])
+    .addOption(sharedOptions[8])
     .action(async (level: Level, options: CLIOptions) => {
       const config: PatchworksConfig | null = (await readConfig()) || null
 
@@ -242,6 +261,11 @@ export default function (): void {
         showExcluded: resolveBooleanOption(
           options.showExcluded,
           config?.showExcluded,
+          false,
+        ),
+        aiSummary: resolveBooleanOption(
+          options.aiSummary,
+          config?.ai?.enabled,
           false,
         ),
       }

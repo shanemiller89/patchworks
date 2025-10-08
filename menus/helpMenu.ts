@@ -34,6 +34,25 @@ export function displayHelpMenu(rl: readline.Interface): Promise<void> {
         --install             Install updated dependencies.
         --exclude-repoless    Skip packages without repository links.
         --show-excluded       Show excluded packages in the console output.
+        --ai-summary          Enable AI-powered critical findings analysis.
+
+      AI Analysis:
+        🤖 AI-powered analysis identifies breaking changes, security issues,
+           and migration steps across all your dependency updates.
+
+        Setup:
+        • Run 'Generate Config' from menu for guided AI setup
+        • Or set "ai.enabled": true in patchworks-config.json
+        • Add API keys: anthropicApiKey or openaiApiKey
+
+        Security:
+        • API keys stored ONLY in local patchworks-config.json
+        • Keys NEVER logged or displayed in output
+        • Keys sent only to official AI provider APIs
+        • Add patchworks-config.json to .gitignore
+
+        Keyboard Shortcuts (in menu):
+        • Press 'a' to toggle AI enabled/disabled
 
       ==============================================
       For more information, visit:

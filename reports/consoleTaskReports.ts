@@ -296,6 +296,73 @@ export function displayResultsTable(
   });
 }
 
+/**
+ * Displays AI-generated critical findings in a formatted output
+ * @param findings - AI critical findings object
+ * @returns Formatted string with AI findings
+ */
+export function displayAIFindings(findings: any, showPreview: boolean = true): string {
+  const { markdownContent, summary, provider, hasBreakingChanges, hasSecurityIssues, packageCount } = findings;
+
+  let output = '\n';
+  output += chalk.bold.cyan('━'.repeat(100)) + '\n';
+  output += chalk.bold.magenta('🤖 AI Critical Findings Summary\n');
+  output += chalk.dim(`Provider: ${provider} | Packages: ${packageCount}\n`);
+  output += chalk.bold.cyan('━'.repeat(100)) + '\n\n';
+
+  // Show key indicators first
+  output += chalk.bold.white('Quick Status:\n');
+  if (hasBreakingChanges) {
+    output += chalk.red('  🚨 Contains breaking changes - review migration steps carefully\n');
+  } else {
+    output += chalk.green('  ✅ No breaking changes detected\n');
+  }
+  
+  if (hasSecurityIssues) {
+    output += chalk.yellow('  🔒 Security issues identified - address immediately\n');
+  } else {
+    output += chalk.green('  ✅ No security issues detected\n');
+  }
+  output += '\n';
+
+  // Render markdown preview if available
+  if (showPreview && markdownContent) {
+    output += chalk.bold.cyan('📄 Analysis Preview:\n');
+    output += chalk.dim('─'.repeat(100)) + '\n\n';
+    
+    // Import and use markdown renderer
+    try {
+      const { renderMarkdownPreview } = require('../utils/markdownRenderer.js');
+      const preview = renderMarkdownPreview(markdownContent, 40);
+      output += preview + '\n\n';
+    } catch (error) {
+      // Fallback if renderer fails
+      output += chalk.gray(summary) + '\n\n';
+    }
+    
+    output += chalk.dim('─'.repeat(100)) + '\n';
+    output += chalk.dim('Full report saved to: AI-CRITICAL-FINDINGS.md\n\n');
+  } else {
+    // Fallback to simple summary
+    output += chalk.bold.white('Executive Summary:\n');
+    output += chalk.gray(summary) + '\n\n';
+    
+    output += chalk.bold.cyan('📄 Full Analysis Report:\n');
+    output += chalk.dim('  A comprehensive markdown report with code examples and mermaid diagrams\n');
+    output += chalk.dim('  has been generated in: AI-CRITICAL-FINDINGS.md\n\n');
+    output += chalk.dim('  The report includes:\n');
+    output += chalk.dim('  • Detailed breaking changes with before/after code examples\n');
+    output += chalk.dim('  • Security vulnerabilities with CVE numbers and severity\n');
+    output += chalk.dim('  • Step-by-step migration guide with code snippets\n');
+    output += chalk.dim('  • Visual dependency flow diagram (Mermaid)\n');
+    output += chalk.dim('  • Recommended update order with risk assessment\n\n');
+  }
+
+  output += chalk.bold.cyan('━'.repeat(100)) + '\n';
+
+  return output;
+}
+
 export function displayFinalReports(
   selectedPackages: SelectedPackage[]
 ): Promise<string> {

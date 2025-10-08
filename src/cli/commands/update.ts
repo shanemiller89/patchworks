@@ -14,6 +14,7 @@ interface CommandOptions {
   excludeRepoless?: boolean;
   debug?: boolean;
   showExcluded?: boolean;
+  aiSummary?: boolean;
 }
 
 export default async function (
@@ -38,6 +39,11 @@ export default async function (
     showExcluded: resolveBooleanOption(
       options.showExcluded,
       config.showExcluded,
+      false
+    ),
+    aiSummary: resolveBooleanOption(
+      options.aiSummary,
+      config.ai?.enabled,
       false
     ),
   };

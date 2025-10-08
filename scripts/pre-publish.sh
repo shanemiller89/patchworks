@@ -9,7 +9,7 @@ npm run build
 
 # 1. Test the bin file directly first
 echo "1️⃣ Testing bin file directly..."
-if node ./bin/patchworks.js --help; then
+if node ./dist/bin/patchworks.js --help; then
     echo "✅ Bin file works directly"
 else
     echo "❌ Bin file fails - check permissions and shebang"

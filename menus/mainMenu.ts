@@ -10,6 +10,7 @@ import readline from 'readline'
 import { promptUserForLevel } from '../prompts/prompts.js'
 import { FinalOptions, Level } from '../src/cli/index.js'
 import { resolveBooleanOption } from '../src/cli/booleanOption.js'
+import { promptAISetup } from '../prompts/aiSetup.js'
 
 const DOUBLE_LINE =
   '======================================================================================================================'
@@ -44,10 +45,22 @@ export async function renderMainMenu(options: MenuOptions): Promise<void> {
     false,
   )
   const install = resolveBooleanOption(options.install, config?.install, true)
+  
+  // AI configuration status
+  const aiEnabled = config?.ai?.enabled ?? false
+  const aiHasKeys = !!(config?.ai?.anthropicApiKey || config?.ai?.openaiApiKey)
+  const aiStatus = aiEnabled 
+    ? chalk.green('Enabled') 
+    : chalk.red('Disabled')
+  const aiInfo = aiEnabled && aiHasKeys
+    ? chalk.dim(' (keys configured)')
+    : aiEnabled 
+      ? chalk.yellow(' (no keys)')
+      : ''
 
   let selectedIndex: number = 0
 
-  let rl = readline.createInterface({
+  const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
     terminal: true,
@@ -96,6 +109,7 @@ ${chalk.blue(SINGLE_LINE)}
   ${chalk.white('♨')} ${chalk.gray.bold('Install Dependencies:')}            ${
       install ? chalk.green('Enabled') : chalk.red('Disabled')
     }
+  ${chalk.white('🤖')} ${chalk.gray.bold('AI Analysis:')}              ${aiStatus}${aiInfo}
 ${chalk.blue(DOUBLE_LINE)}
   `
 
@@ -239,6 +253,7 @@ ${chalk.blue(DOUBLE_LINE)}
             write: false,
             excludeRepoless: false,
             debug: false,
+            aiSummary: false,
           }
 
           return await main(finalOptions).then(() => {
@@ -263,6 +278,7 @@ ${chalk.blue(DOUBLE_LINE)}
             excludeRepoless: false,
             debug: false,
             showExcluded: false,
+            aiSummary: false,
           }
 
           return await main(finalOptions)
@@ -282,6 +298,7 @@ ${chalk.blue(DOUBLE_LINE)}
             write: false,
             excludeRepoless: false,
             debug: false,
+            aiSummary: false,
           }
 
           return await main(finalOptions).then(() => {
@@ -303,19 +320,35 @@ ${chalk.blue(DOUBLE_LINE)}
             install: true,
             excludeRepoless: false,
             debug: false,
+            aiSummary: false,
           }
 
           return await main(finalOptions).then(() => {
             process.exit(0)
           })
         }
-        case 4:
-          console.log('Generating Config...')
-          await generateConfig().then(() => {
-            process.exit(0)
-          })
-          console.log('Config generated successfully!')
-          break
+        case 4: {
+          console.log('\n📝 Configuration Setup Wizard\n')
+          
+          // Clean up event listeners before prompts
+          process.stdin.removeAllListeners('keypress')
+          if (process.stdin.isTTY) process.stdin.setRawMode(false)
+          rl.close()
+          
+          // Prompt for AI setup
+          const aiConfig = await promptAISetup()
+          
+          // Generate config with AI settings
+          await generateConfig(aiConfig)
+          
+          console.log(chalk.green('\n✓ Configuration saved to patchworks-config.json'))
+          console.log(chalk.cyan('\n💡 Tips:'))
+          console.log(chalk.dim('  • Add patchworks-config.json to .gitignore'))
+          console.log(chalk.dim('  • You can edit the file manually anytime'))
+          console.log(chalk.dim('  • Use --ai-summary flag to enable AI per run'))
+          
+          process.exit(0)
+        }
         case 5:
           console.log('Displaying Help and Documentation...')
           rl.pause()
@@ -327,6 +360,47 @@ ${chalk.blue(DOUBLE_LINE)}
           console.log('Exiting...')
           process.exit(0)
       }
+    } else if (str === 'a' || str === 'A') {
+      // Toggle AI enabled/disabled
+      if (!config) {
+        console.log(chalk.yellow('\n⚠️  No config file found. Generate one first (option 4).'))
+        renderMenu()
+        return
+      }
+      
+      const newAiEnabled = !aiEnabled
+      config.ai = config.ai || {
+        enabled: false,
+        focusAreas: ['breaking', 'security', 'migration'],
+        provider: 'auto',
+        anthropicModel: 'claude-3-5-sonnet-20241022',
+        openaiModel: 'gpt-4o',
+        geminiModel: 'gemini-2.0-flash-001',
+      }
+      config.ai.enabled = newAiEnabled
+      
+      // Write updated config
+      const fs = await import('fs')
+      const path = await import('path')
+      const configPath = path.resolve(process.cwd(), 'patchworks-config.json')
+      try {
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+        console.log(chalk.green(`\n✓ AI Analysis ${newAiEnabled ? 'enabled' : 'disabled'}`))
+        
+        if (newAiEnabled && !aiHasKeys) {
+          console.log(chalk.yellow('⚠️  No API keys configured. Add them to patchworks-config.json'))
+          console.log(chalk.dim('   Or run "Generate Config" to set up AI with the wizard'))
+        }
+      } catch (error) {
+        console.log(chalk.red(`\n✗ Failed to update config: ${(error as Error).message}`))
+      }
+      
+      // Reload and render menu with updated status
+      const updatedConfig = await readConfig()
+      if (updatedConfig) {
+        Object.assign(config, updatedConfig)
+      }
+      renderMenu()
     }
     renderMenu()
   }

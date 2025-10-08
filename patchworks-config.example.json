@@ -1,0 +1,20 @@
+{
+  "level": "minor",
+  "install": true,
+  "limit": null,
+  "levelScope": "strict",
+  "summary": false,
+  "skipped": false,
+  "write": false,
+  "excludeRepoless": false,
+  "debug": false,
+  "showExcluded": false,
+  "ai": {
+    "enabled": false,
+    "focusAreas": ["breaking", "security", "migration"],
+    "provider": "auto",
+    "model": "claude-3-5-sonnet-20241022",
+    "anthropicApiKey": "",
+    "openaiApiKey": ""
+  }
+}

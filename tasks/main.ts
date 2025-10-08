@@ -18,16 +18,20 @@ import {
   displayResultsTable,
   customTablePrompt,
   displayFinalReports,
+  displayAIFindings,
 } from '../reports/consoleTaskReports.js'
 import { FinalOptions } from '../src/cli/index.js'
 import { shouldInstallDependencies } from './installGuard.js'
 import type { IncludedPackage, PackageWithLogs } from '../types/index.js'
+import { generateCriticalFindings } from '../analysis/aiAnalyzer.js'
+import { readConfig } from '../config/configUtil.js'
 
 export interface TaskContext {
   reportDir?: string
   includedPackages?: PackageWithLogs[]
   selectedPackages?: IncludedPackage[]
   source?: string
+  aiFindings?: import('../types/index.js').AICriticalFindings
   [key: string]: any
 }
 
@@ -221,7 +225,55 @@ export async function main(options: FinalOptions): Promise<void> {
           return task.newListr(subTasks, { concurrent: false })
         },
       },
-      // Step 5: Generate pre-update reports
+      // Step 5: Generate AI critical findings summary (optional)
+      {
+        title: 'Generate AI critical findings summary',
+        enabled: () => options.aiSummary,
+        skip: (ctx: TaskContext) => {
+          if (!ctx.includedPackages || ctx.includedPackages.length === 0) {
+            return 'No packages to analyze'
+          }
+          return false
+        },
+        task: async (ctx: TaskContext, task: any) => {
+          const config = await readConfig()
+
+          if (!config?.ai?.anthropicApiKey && !config?.ai?.openaiApiKey && !config?.ai?.geminiApiKey) {
+            logger.warn(
+              'AI analysis requires API keys in config file. ' +
+                'Add "anthropicApiKey", "openaiApiKey", or "geminiApiKey" to the "ai" section in patchworks-config.json',
+            )
+            task.skip('No API keys configured')
+            return
+          }
+
+          task.output = 'Analyzing release notes with AI...'
+          try {
+            ctx.aiFindings = await generateCriticalFindings(
+              ctx.includedPackages!,
+              config.ai,
+            )
+            task.output = `AI analysis complete (provider: ${ctx.aiFindings.provider})`
+            logger.success(
+              `Generated AI summary using ${ctx.aiFindings.provider}`,
+            )
+          } catch (error) {
+            const errorMessage = (error as Error).message
+            logger.warn(`AI analysis failed: ${errorMessage}`)
+            
+            // Check if it's a quota/billing error
+            if (errorMessage.includes('quota') || errorMessage.includes('429')) {
+              logger.warn('💡 Tip: Check your API billing and quota at:')
+              logger.warn('   - Anthropic: https://console.anthropic.com/')
+              logger.warn('   - OpenAI: https://platform.openai.com/account/billing')
+            }
+            
+            // Don't throw - allow workflow to continue without AI analysis
+            task.skip('AI analysis failed (continuing workflow)')
+          }
+        },
+      },
+      // Step 6: Select packages to update
       {
         title: 'Select packages to update',
         enabled: () => !reportsOnly,
@@ -236,7 +288,7 @@ export async function main(options: FinalOptions): Promise<void> {
         },
         rendererOptions: { bottomBar: 999 },
       },
-      // Step 6: Write changes to package.json (optional)
+      // Step 7: Write changes to package.json (optional)
       {
         title: 'Write changes to package.json',
         enabled: () => !reportsOnly,
@@ -244,7 +296,7 @@ export async function main(options: FinalOptions): Promise<void> {
           await writeChanges(ctx.selectedPackages!)
         },
       },
-      // Step 7: Install updated dependencies (optional)
+      // Step 8: Install updated dependencies (optional)
       {
         title: 'Install updated dependencies',
         enabled: () => shouldInstallDependencies(options),
@@ -255,22 +307,40 @@ export async function main(options: FinalOptions): Promise<void> {
       {
         title: 'Final Reports',
         task: async (ctx: TaskContext, task: any) => {
+          let finalOutput = ''
+
           if (!reportsOnly) {
             const finalReports = await displayFinalReports(ctx.selectedPackages!)
+            finalOutput = finalReports
+
+            // Add AI findings if available
+            if (ctx.aiFindings) {
+              finalOutput += '\n' + displayAIFindings(ctx.aiFindings)
+            }
+
             const reports = await bundleReports(
               ctx.selectedPackages!,
               ctx.reportDir!,
+              ctx.aiFindings,
             )
             task.title = reports
-            task.output = finalReports
+            task.output = finalOutput
           } else {
             const finalReports = await displayFinalReports(ctx.includedPackages!)
+            finalOutput = finalReports
+
+            // Add AI findings if available
+            if (ctx.aiFindings) {
+              finalOutput += '\n' + displayAIFindings(ctx.aiFindings)
+            }
+
             const reports = await bundleReports(
               ctx.includedPackages!,
               ctx.reportDir!,
+              ctx.aiFindings,
             )
             task.title = reports
-            task.output = finalReports
+            task.output = finalOutput
           }
         },
         rendererOptions: { bottomBar: 999, persistentOutput: true },

@@ -12,9 +12,29 @@ export interface PatchworksConfig {
   excludeRepoless: boolean
   debug: boolean
   showExcluded: boolean
+  ai?: {
+    enabled: boolean
+    anthropicApiKey?: string
+    openaiApiKey?: string
+    geminiApiKey?: string
+    focusAreas?: ('breaking' | 'security' | 'deprecation' | 'performance' | 'migration')[]
+    provider?: 'anthropic' | 'openai' | 'gemini' | 'auto'
+    anthropicModel?: string  // Claude model (e.g., claude-3-5-sonnet-20241022)
+    openaiModel?: string     // OpenAI model (e.g., gpt-4o, gpt-4)
+    geminiModel?: string     // Gemini model (e.g., gemini-1.5-pro, gemini-1.5-flash)
+  }
 }
 
-export async function generateConfig(): Promise<void> {
+export interface AIConfigInput {
+  enabled: boolean
+  anthropicApiKey?: string
+  openaiApiKey?: string
+  geminiApiKey?: string
+  focusAreas: string[]
+  provider: string
+}
+
+export async function generateConfig(aiConfig?: AIConfigInput): Promise<void> {
   const config: PatchworksConfig = {
     // Configuration for Patchworks
     level: 'minor', // Set the default update level
@@ -27,12 +47,60 @@ export async function generateConfig(): Promise<void> {
     excludeRepoless: false, // Exclude packages without repositories (default: false)
     debug: false, // Show verbose debug consoles (default: false)
     showExcluded: false, // Show excluded packages in the console output (default: false)
+    ai: aiConfig ? {
+      enabled: aiConfig.enabled,
+      focusAreas: aiConfig.focusAreas as ('breaking' | 'security' | 'deprecation' | 'performance' | 'migration')[],
+      provider: aiConfig.provider as 'auto' | 'anthropic' | 'openai' | 'gemini',
+      anthropicModel: 'claude-3-5-sonnet-20241022', // Claude model
+      openaiModel: 'gpt-4o', // OpenAI model
+      geminiModel: 'gemini-2.0-flash-001', // Gemini model (2.0 Flash is faster and better)
+      ...(aiConfig.anthropicApiKey && { anthropicApiKey: aiConfig.anthropicApiKey }),
+      ...(aiConfig.openaiApiKey && { openaiApiKey: aiConfig.openaiApiKey }),
+      ...(aiConfig.geminiApiKey && { geminiApiKey: aiConfig.geminiApiKey }),
+    } : {
+      enabled: false, // Enable AI-powered critical findings analysis (default: false)
+      focusAreas: ['breaking', 'security', 'migration'], // Focus areas for AI analysis
+      provider: 'auto', // AI provider: 'anthropic', 'openai', 'gemini', or 'auto' for fallback
+      anthropicModel: 'claude-3-5-sonnet-20241022', // Claude model to use
+      openaiModel: 'gpt-4o', // OpenAI model to use (gpt-4o, gpt-4, etc.)
+      geminiModel: 'gemini-2.0-flash-001', // Gemini model to use (gemini-2.0-flash-001, gemini-2.5-flash, etc.)
+      // Add your API keys here:
+      // anthropicApiKey: 'sk-ant-...',
+      // openaiApiKey: 'sk-...',
+      // geminiApiKey: '...',
+    },
   }
 
   const outputPath = path.resolve(process.cwd(), 'patchworks-config.json')
 
   try {
-    fs.writeFileSync(outputPath, JSON.stringify(config, null, 2))
+    // Create JSON with helpful comments for security
+    let jsonString = JSON.stringify(config, null, 2)
+    
+    // Add security notes as comments after the AI section
+    if (config.ai) {
+      const aiSectionEnd = jsonString.lastIndexOf('}', jsonString.lastIndexOf('}') - 1)
+      const securityComment = `
+
+    // 🔒 SECURITY NOTES:
+    // • API keys are stored ONLY in this local file
+    // • Keys are NEVER logged, displayed, or sent anywhere except AI providers  
+    // • Add this file to .gitignore to prevent accidental commits
+    // • Get keys from:
+    //   - Anthropic: https://console.anthropic.com/
+    //   - OpenAI: https://platform.openai.com/
+    
+    // Uncomment and add your API keys:
+    // "anthropicApiKey": "sk-ant-...",
+    // "openaiApiKey": "sk-..."`
+      
+      // Only add comments if keys weren't configured
+      if (!config.ai.anthropicApiKey && !config.ai.openaiApiKey) {
+        jsonString = jsonString.slice(0, aiSectionEnd) + securityComment + '\n  ' + jsonString.slice(aiSectionEnd)
+      }
+    }
+    
+    fs.writeFileSync(outputPath, jsonString)
     console.log(`Configuration saved to ${outputPath}`)
   } catch (error) {
     console.error(`Failed to write configuration: ${(error as Error).message}`)

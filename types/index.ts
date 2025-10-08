@@ -75,3 +75,26 @@ export interface PackageWithLogs extends PackageData {
 export interface IncludedPackage extends PackageData {
   // Used by writeChanges and installDependencies
 }
+
+/**
+ * AI-generated critical findings analysis
+ */
+export interface AICriticalFindings {
+  // Raw markdown content with code blocks and mermaid diagrams
+  markdownContent: string;
+  
+  // Metadata for quick reference
+  summary: string;  // Extracted from ## Executive Summary
+  hasBreakingChanges: boolean;
+  hasSecurityIssues: boolean;
+  packageCount: number;
+  
+  // Legacy fields for backwards compatibility (can be deprecated later)
+  breakingChanges?: string[];
+  securityIssues?: string[];
+  migrationSteps?: string[];
+  recommendedOrder?: string[];
+  
+  provider: 'anthropic' | 'openai' | 'gemini';
+  timestamp: string;
+}

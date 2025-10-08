@@ -718,6 +718,10 @@ function postProcessResults(
   results: CategorizedResults,
   confidenceScores: ConfidenceScores
 ): void {
+  // Ensure all result arrays are initialized
+  if (!results[BREAKING_CHANGES]) results[BREAKING_CHANGES] = [];
+  if (!results.miscellaneous) results.miscellaneous = [];
+  
   // Move low-confidence breaking changes to miscellaneous
   results[BREAKING_CHANGES] = results[BREAKING_CHANGES].filter((sentence) => {
     const confidence = confidenceScores[sentence] || 0;
@@ -731,9 +735,15 @@ function postProcessResults(
   // Deduplicate entries across categories
   const seen = new Set<string>();
   Object.keys(results).forEach((category) => {
-    results[category as keyof CategorizedResults] = results[
-      category as keyof CategorizedResults
-    ].filter((sentence) => {
+    const categoryKey = category as keyof CategorizedResults;
+    
+    // Ensure the category array exists
+    if (!results[categoryKey]) {
+      results[categoryKey] = [] as any;
+      return;
+    }
+    
+    results[categoryKey] = results[categoryKey].filter((sentence) => {
       if (seen.has(sentence)) {
         return false;
       }

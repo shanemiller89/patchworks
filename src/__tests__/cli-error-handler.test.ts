@@ -1,8 +1,8 @@
-import { describe, test, expect, beforeAll, beforeEach, vi } from 'vitest';
+import { describe, test, expect, beforeAll, beforeEach, vi, type Mock } from 'vitest';
 
-const mockLoggerError = vi.fn();
+const mockLoggerError: Mock = vi.fn();
 
-let createOutputErrorHandler;
+let createOutputErrorHandler: (options: { help: () => void }) => (str: string, write: (output: string) => void) => void;
 
 beforeAll(async () => {
   vi.resetModules();

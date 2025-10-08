@@ -2,25 +2,17 @@
   "name": "patchworks",
   "version": "0.1.0",
   "description": "A CLI tool to manage dependency updates by semantic versioning, breaking change detection, and batch selection for efficient prioritization",
-  "main": "src/cli/index.js",
+  "main": "dist/src/cli/index.js",
   "bin": {
-    "patchworks": "./bin/patchworks.js"
+    "patchworks": "./dist/bin/patchworks.js"
   },
   "files": [
-    "bin/",
-    "src/",
-    "analysis/",
-    "config/",
-    "menus/",
-    "prompts/",
-    "reports/",
-    "tasks/",
-    "utils/",
-    "versionLogs/",
+    "dist/",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
+    "dev": "tsx bin/patchworks.ts",
     "test": "npm run build && vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -31,7 +23,7 @@
     "type-check": "tsc --noEmit",
     "type-check:watch": "tsc --noEmit --watch",
     "build": "tsc -p tsconfig.build.json",
-    "postbuild": "chmod +x bin/patchworks.js",
+    "postbuild": "chmod +x dist/bin/patchworks.js",
     "prepare": "npm run build",
     "pre-publish": "./scripts/pre-publish.sh",
     "prepublishOnly": "./scripts/pre-publish.sh && npm run lint && npm run type-check && npm test",
@@ -117,6 +109,7 @@
     "@vitest/ui": "^3.2.4",
     "eslint": "^8.0.0",
     "prettier": "^2.8.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   }

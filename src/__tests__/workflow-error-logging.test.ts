@@ -1,7 +1,7 @@
-import { describe, test, expect, beforeEach, vi } from 'vitest';
+import { describe, test, expect, beforeEach, vi, type Mock } from 'vitest';
 
-const mockError = vi.fn();
-const mockSuccess = vi.fn();
+const mockError: Mock = vi.fn();
+const mockSuccess: Mock = vi.fn();
 
 vi.mock('../../reports/logger.js', () => ({
   __esModule: true,
@@ -72,8 +72,8 @@ vi.mock('listr2', () => ({
   })),
   PRESET_TIMER: {},
   color: {
-    red: (input) => input,
-    green: (input) => input,
+    red: (input: string) => input,
+    green: (input: string) => input,
   },
 }));
 
@@ -90,6 +90,20 @@ vi.mock('../../reports/consoleTaskReports.js', () => ({
   displayFinalReports: vi.fn(),
 }));
 
+type WorkflowOptions = {
+  reportsOnly: boolean;
+  level: 'patch' | 'minor' | 'major';
+  limit: number | null;
+  levelScope: 'strict' | 'cascade';
+  summary: boolean;
+  skipped: boolean;
+  write: boolean;
+  install: boolean;
+  excludeRepoless: boolean;
+  debug: boolean;
+  showExcluded: boolean;
+};
+
 describe('workflow failure handling', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -99,7 +113,7 @@ describe('workflow failure handling', () => {
   test('logs an error when tasks reject without DEBUG', async () => {
     const { main } = await import('../../tasks/main.ts');
 
-    await main({
+    const options: WorkflowOptions = {
       reportsOnly: false,
       level: 'minor',
       limit: null,
@@ -111,7 +125,9 @@ describe('workflow failure handling', () => {
       excludeRepoless: false,
       debug: false,
       showExcluded: false,
-    });
+    };
+
+    await main(options);
 
     expect(mockSuccess).not.toHaveBeenCalled();
     expect(mockError).toHaveBeenCalledWith(

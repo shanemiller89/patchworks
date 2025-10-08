@@ -7,6 +7,7 @@ import {
   useKeypress,
   usePrefix,
   useState,
+  type KeypressEvent,
 } from '@inquirer/core';
 import chalk from 'chalk';
 import _ from 'lodash';
@@ -68,11 +69,6 @@ interface SelectedPackage {
 interface CustomPromptConfig {
   task: any;
   packages: PreUpdateReport[];
-}
-
-interface KeyEvent {
-  name?: string;
-  [key: string]: any;
 }
 
 /**
@@ -390,7 +386,7 @@ export const customTablePrompt = createPrompt(
 
     const output = tableGenerator.generateTable();
 
-    useKeypress((key: KeyEvent) => {
+    useKeypress((key: KeypressEvent) => {
       if (isEnterKey(key)) {
         if (selectedPackages.length > 0) {
           setStatus('done');

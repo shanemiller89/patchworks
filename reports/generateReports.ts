@@ -6,6 +6,7 @@ import { UNKNOWN } from '../utils/constants.js';
 import { ALL } from '../utils/constants.js';
 import tar from 'tar-stream';
 import path from 'path';
+import type { PackageWithLogs } from '../types/index.js';
 
 interface Author {
   name?: string;
@@ -44,34 +45,27 @@ interface ReleaseNote {
   published_at?: string;
 }
 
-interface PackageData {
-  packageName: string;
-  metadata: PackageMetadata;
-  categorizedNotes?: CategorizedNote[];
-  releaseNotes?: ReleaseNote[] | string | null;
-  changelog?: string | null;
-  [key: string]: any;
-}
-
-const generatePackageDetails = (metadata: PackageMetadata): string => {
+const generatePackageDetails = (pkg: PackageWithLogs): string => {
+  const {
+    packageName,
+    metadata
+  } = pkg;
   const {
     current,
-    wanted,
     latest,
     updateType,
     author,
     description,
     repository,
-    homepage,
+    homepage
   } = metadata;
-
+  
   const packageDetails = `
----
-**Description:** ${description || 'No description available'}
+## ${packageName}
+
+**Description:** ${description || 'No description provided'}
 
 **Current Version:** ${current}
-
-**Wanted Version:** ${wanted}
 
 **Latest Version:** ${latest}
 
@@ -81,9 +75,9 @@ const generatePackageDetails = (metadata: PackageMetadata): string => {
     author?.email || 'No email provided'
   })
 
-**Repository:** [${repository.url}](${repository.url})
+**Repository:** ${repository ? `[${repository.url}](${repository.url})` : 'Not available'}
 
-**Homepage:** [${homepage}](${homepage})
+**Homepage:** ${homepage ? `[${homepage}](${homepage})` : 'Not available'}
 
 ---
 
@@ -106,7 +100,7 @@ function sanitizeFilename(filename: string): string {
  * @param data - The data for generating the report.
  * @returns The generated markdown report.
  */
-export function generatePatchworkReport(data: PackageData): string {
+export function generatePatchworkReport(data: PackageWithLogs): string {
   try {
     const { packageName, metadata, categorizedNotes } = data;
 
@@ -118,7 +112,7 @@ export function generatePatchworkReport(data: PackageData): string {
     logger.debug(`categorizedNotes: ${categorizedNotes}`);
 
     const header = `# ${packageName} Update Report\n`;
-    const packageDetails = generatePackageDetails(metadata);
+    const packageDetails = generatePackageDetails(data);
 
     const categorizedNotesSection = categorizedNotes
       .map((note) => {
@@ -161,7 +155,7 @@ ${categories || 'No categorized notes available.'}
   }
 }
 
-export function generateOriginalNotes(data: PackageData): string {
+export function generateOriginalNotes(data: PackageWithLogs): string {
   try {
     const { packageName, metadata, releaseNotes, changelog } = data;
 
@@ -184,7 +178,7 @@ export function generateOriginalNotes(data: PackageData): string {
         ? 'Changelog'
         : 'Release Notes'
     } Notes\n`;
-    const packageDetails = generatePackageDetails(metadata);
+    const packageDetails = generatePackageDetails(data);
 
     const notesSection = notes
       .map((note) => `## Version ${note.version}\n${note.notes}`)
@@ -201,7 +195,7 @@ export function generateOriginalNotes(data: PackageData): string {
 }
 
 export const bundleReports = async (
-  includedPackages: PackageData[],
+  includedPackages: PackageWithLogs[],
   reportDir: string
 ): Promise<string> => {
   try {

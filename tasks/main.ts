@@ -7,7 +7,7 @@ import { fetchReleaseNotes } from '../versionLogs/fetchReleaseNotes.js'
 import { bundleReports } from '../reports/generateReports.js'
 import logger from '../reports/logger.js'
 import { RELEASE_NOTES, SKIPPED, UNKNOWN } from '../utils/constants.js'
-import { installDependencies, writeChanges, IncludedPackage } from '../utils/updatingHelpers.js'
+import { installDependencies, writeChanges } from '../utils/updatingHelpers.js'
 import { processPackageVersions } from './versionProcessor/versionProcessor.js'
 import {
   promptUserForReportDirectory,
@@ -21,6 +21,7 @@ import {
 } from '../reports/consoleTaskReports.js'
 import { FinalOptions } from '../src/cli/index.js'
 import { shouldInstallDependencies } from './installGuard.js'
+import type { IncludedPackage, PackageWithLogs } from '../types/index.js'
 
 export interface TaskContext {
   reportDir?: string
@@ -30,16 +31,8 @@ export interface TaskContext {
   [key: string]: any
 }
 
-export interface PackageWithLogs extends IncludedPackage {
-  releaseNotes?: any
-  changelog?: any
-  source?: string
-  attemptedReleaseNotes?: boolean
-  attemptedFallbackA?: boolean
-  attemptedFallbackB?: boolean
-  importantTerms?: any
-  categorizedNotes?: any
-}
+// Re-export types for backward compatibility
+export type { PackageWithLogs, IncludedPackage }
 
 export interface TaskFunction {
   (ctx: TaskContext, task: any): Promise<any> | any

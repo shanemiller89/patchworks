@@ -1,11 +1,18 @@
 import { describe, test, expect, beforeAll, afterAll, vi } from 'vitest';
 
-const createChalkMock = () => {
-  const handler = {
+type ChalkMockHandler = {
+  apply: (_target: unknown, _thisArg: unknown, args: string[]) => string;
+  get: (_target: unknown, _prop: string | symbol) => ChalkProxy;
+};
+
+type ChalkProxy = (() => string) & ProxyHandler<() => string>;
+
+const createChalkMock = (): ChalkProxy => {
+  const handler: ChalkMockHandler = {
     apply: (_target, _thisArg, args) => args[0],
     get: (_target, _prop) => proxy,
   };
-  const proxy = new Proxy(() => '', handler);
+  const proxy = new Proxy(() => '', handler) as ChalkProxy;
   return proxy;
 };
 
@@ -37,18 +44,25 @@ vi.mock('../../reports/styles.js', () => ({
   styles: new Proxy(
     {},
     {
-      get: () => (value) => value,
+      get: () => (value: string) => value,
     },
   ),
 }));
 
+type TableCell = {
+  type?: string;
+  value: string | boolean | number | null | undefined;
+};
+
 vi.mock('../../utils/TableGenerator.js', () => ({
   TableGenerator: class {
-    constructor(_headers, data) {
+    data: TableCell[][];
+
+    constructor(_headers: string[], data: TableCell[][]) {
       this.data = data;
     }
 
-    generateTable() {
+    generateTable(): string {
       return this.data
         .map((row) =>
           row
@@ -65,15 +79,45 @@ vi.mock('../../utils/TableGenerator.js', () => ({
   },
 }));
 
-const stripAnsi = (input) => input.replace(/\u001b\[[0-9;]*m/g, '');
+const stripAnsi = (input: string): string => input.replace(/\u001b\[[0-9;]*m/g, '');
 
 const modulePromise = import('../../reports/consoleTaskReports.js');
 
-let displayIncludedPackages;
-let displayResultsTable;
+type PackageMetadata = {
+  current: string;
+  wanted?: string;
+  latest: string;
+  updateType: string;
+  updatingDifficulty?: string | number;
+  githubUrl?: string;
+  releaseNotesCompatible: boolean;
+  fallbackACompatible: boolean;
+  fallbackBCompatible: boolean;
+  homepage?: string;
+  fallbackUrl?: string;
+};
+
+type IncludedPackage = {
+  packageName: string;
+  metadata: PackageMetadata;
+};
+
+type ProcessedPackage = {
+  packageName: string;
+  metadata: PackageMetadata;
+  changelog?: string;
+  releaseNotes?: Array<{ notes: string }>;
+  source: string;
+  attemptedReleaseNotes: boolean;
+  attemptedFallbackA: boolean;
+  attemptedFallbackB: boolean;
+};
+
+let displayIncludedPackages: (packages: IncludedPackage[]) => Promise<string>;
+let displayResultsTable: (packages: ProcessedPackage[]) => Promise<string>;
 
 describe('consoleTaskReports compatibility flags', () => {
-  let originalColumns;
+  let originalColumns: number | undefined;
 
   beforeAll(async () => {
     const module = await modulePromise;
@@ -85,11 +129,11 @@ describe('consoleTaskReports compatibility flags', () => {
   });
 
   afterAll(() => {
-    process.stdout.columns = originalColumns;
+    process.stdout.columns = originalColumns!;
   });
 
   test('displayIncludedPackages renders true compatibility flags as true', async () => {
-    const includedPackages = [
+    const includedPackages: IncludedPackage[] = [
       {
         packageName: 'test-package',
         metadata: {
@@ -115,7 +159,7 @@ describe('consoleTaskReports compatibility flags', () => {
   });
 
   test('displayResultsTable renders true compatibility flags as true', async () => {
-    const packages = [
+    const packages: ProcessedPackage[] = [
       {
         packageName: 'test-package',
         metadata: {

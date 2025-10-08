@@ -1,7 +1,7 @@
 // versionLogs/fetchCommits.ts
 
 import { Octokit } from '@octokit/rest';
-import { CommitParser } from 'conventional-commits-parser';
+import * as conventionalCommitsParser from 'conventional-commits-parser';
 import semver from 'semver';
 import logger from '../reports/logger.js';
 
@@ -124,7 +124,7 @@ export async function fetchCommits({
     logger.debug(`Number of commits found: ${comparison.commits.length}`);
 
     // Parse commits using `conventional-commits-parser`
-    const parser = new CommitParser(); // Initialize parser
+    const parser = new (conventionalCommitsParser as any).CommitParser(); // Initialize parser
     const conventionalCommits: ParsedCommit[] = [];
     const nonConventionalCommits: Commit[] = [];
 

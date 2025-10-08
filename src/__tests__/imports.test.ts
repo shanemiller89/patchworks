@@ -6,8 +6,13 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+type ModuleInfo = {
+  name: string;
+  path: string;
+};
+
 describe('Import Verification Tests', () => {
-  const keyModules = [
+  const keyModules: ModuleInfo[] = [
     { name: 'Config Utility', path: '../../config/configUtil' },
     { name: 'Constants', path: '../../utils/constants' },
     { name: 'Alignment Helpers', path: '../../utils/alignmentHelpers' },
@@ -33,7 +38,7 @@ describe('Import Verification Tests', () => {
   describe('Entry point validation', () => {
     test('package.json main entry point exists', () => {
       const packageJsonPath = path.resolve(__dirname, '../../package.json');
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+      const packageJson: { main: string } = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
       
       const mainPath = path.resolve(__dirname, '../../', packageJson.main);
       expect(fs.existsSync(mainPath)).toBe(true);
@@ -41,7 +46,9 @@ describe('Import Verification Tests', () => {
 
     test('binary entry point exists and is executable', () => {
       const packageJsonPath = path.resolve(__dirname, '../../package.json');
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+      const packageJson: { bin: { patchworks: string } } = JSON.parse(
+        fs.readFileSync(packageJsonPath, 'utf8')
+      );
       
       const binPath = path.resolve(__dirname, '../../', packageJson.bin.patchworks);
       expect(fs.existsSync(binPath)).toBe(true);
@@ -52,7 +59,7 @@ describe('Import Verification Tests', () => {
   });
 
   describe('Directory structure validation', () => {
-    const requiredDirectories = [
+    const requiredDirectories: string[] = [
       'src/cli',
       'config',
       'utils', 
@@ -74,7 +81,7 @@ describe('Import Verification Tests', () => {
   });
 
   describe('Critical files validation', () => {
-    const criticalFiles = [
+    const criticalFiles: string[] = [
       'package.json',
       'LICENSE',
       'README.md',
@@ -90,4 +97,4 @@ describe('Import Verification Tests', () => {
       });
     });
   });
-}); 
+});

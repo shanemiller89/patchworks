@@ -122,7 +122,8 @@ export async function fetchReleaseNotes({
         `Attempting to fetch release notes from fallback URL for package: ${packageName} - Fallback URL: ${fallbackUrl}`
       );
       logger.fallback(
-        `Attempting to fetch release notes from fallback URL for package: ${packageName}`
+        'Release Notes URL',
+        fallbackUrl
       );
       try {
         // Normalize fallback URL to strip trailing paths like /bugs or /issues

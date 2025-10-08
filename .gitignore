@@ -7,3 +7,13 @@ dist/
 .npmrc
 patchworks-config.json
 .cursor
+
+# Compiled TypeScript files alongside source (only keep in dist/)
+/**/*.js
+/**/*.d.ts
+/**/*.d.ts.map
+
+# Exception: Keep essential config and test files
+!vitest.config.js
+!src/__tests__/setup.js
+!.eslintrc.js

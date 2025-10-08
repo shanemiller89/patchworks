@@ -1,6 +1,7 @@
 // analysis/analyzeLogData.ts
 
 import * as cheerio from 'cheerio';
+import type { Element } from 'domhandler';
 import _ from 'lodash';
 import MarkdownIt from 'markdown-it';
 import markdownItContainer from 'markdown-it-container';
@@ -126,12 +127,30 @@ function parseHTML(htmlContent: string): Record<string, any[]> {
   const sections: Record<string, any[]> = {};
 
   /**
+   * Flattens ListItem[] into string[] by extracting text recursively.
+   * @param items - Array of list items to flatten.
+   * @returns Array of strings.
+   */
+  function flattenListItems(items: ListItem[]): string[] {
+    const result: string[] = [];
+    for (const item of items) {
+      if (item.text) {
+        result.push(item.text);
+      }
+      if (item.children) {
+        result.push(...flattenListItems(item.children));
+      }
+    }
+    return result;
+  }
+
+  /**
    * Parses a list element and returns a structured representation of its items.
    * Handles nested lists by recursively parsing them.
    * @param element - The list element to parse.
    * @returns An array of list items, each with text and optional children.
    */
-  function parseList(element: cheerio.Element): ListItem[] {
+  function parseList(element: Element): ListItem[] {
     return $(element)
       .find('li')
       .map((_, li) => {
@@ -159,7 +178,7 @@ function parseHTML(htmlContent: string): Record<string, any[]> {
       )
       .map((_, elem) => {
         if ($(elem).is('ul, ol')) {
-          return parseList(elem);
+          return flattenListItems(parseList(elem));
         } else if ($(elem).is('table')) {
           return $(elem)
             .find('tr')

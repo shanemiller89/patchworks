@@ -1,16 +1,16 @@
-import { describe, test, expect, beforeAll, beforeEach, afterAll, vi } from 'vitest';
+import { describe, test, expect, beforeAll, beforeEach, afterAll, vi, type Mock } from 'vitest';
 
-const mockBoxen = vi.fn();
+const mockBoxen: Mock = vi.fn();
 
 vi.mock('../../reports/styles.js', () => ({
   __esModule: true,
   styles: {
-    success: (msg) => msg,
-    warning: (msg) => msg,
-    error: (msg) => msg,
-    debug: (msg) => msg,
-    info: (msg) => msg,
-    message: (msg) => msg,
+    success: (msg: string) => msg,
+    warning: (msg: string) => msg,
+    error: (msg: string) => msg,
+    debug: (msg: string) => msg,
+    info: (msg: string) => msg,
+    message: (msg: string) => msg,
     separator: '',
   },
   mainTitleOptions: {},
@@ -22,12 +22,22 @@ vi.mock('boxen', () => ({
   default: mockBoxen,
 }));
 
+type Logger = {
+  error: (message: string) => void;
+  warn: (message: string) => void;
+  success: (message: string) => void;
+  debug: (message: string) => void;
+  info?: (message: string) => void;
+  message?: (message: string) => void;
+};
+
 describe('logger output behaviour', () => {
-  let logger;
+  let logger: Logger;
   const originalDebug = process.env.DEBUG;
 
   beforeAll(async () => {
-    ({ default: logger } = await import('../../reports/logger.js'));
+    const module = await import('../../reports/logger.js');
+    logger = module.default;
   });
 
   beforeEach(() => {
@@ -47,7 +57,8 @@ describe('logger output behaviour', () => {
     logger.error('Test error message');
 
     expect(console.error).toHaveBeenCalledTimes(1);
-    const [firstCall] = console.error.mock.calls;
+    const consoleMock = console.error as Mock;
+    const firstCall = consoleMock.mock.calls[0];
     expect(firstCall[0]).toContain('[ERROR]');
   });
 
@@ -55,7 +66,8 @@ describe('logger output behaviour', () => {
     logger.warn('Test warning message');
 
     expect(console.warn).toHaveBeenCalledTimes(1);
-    const [firstCall] = console.warn.mock.calls;
+    const consoleMock = console.warn as Mock;
+    const firstCall = consoleMock.mock.calls[0];
     expect(firstCall[0]).toContain('[WARNING]');
   });
 
@@ -63,7 +75,8 @@ describe('logger output behaviour', () => {
     logger.success('Test success message');
 
     expect(console.log).toHaveBeenCalledTimes(1);
-    const [firstCall] = console.log.mock.calls;
+    const consoleMock = console.log as Mock;
+    const firstCall = consoleMock.mock.calls[0];
     expect(firstCall[0]).toContain('[SUCCESS]');
   });
 

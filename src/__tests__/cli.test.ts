@@ -1,4 +1,4 @@
-import { spawnSync } from 'child_process';
+import { spawnSync, SpawnSyncReturns } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,12 +8,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const packageJsonPath = path.resolve(__dirname, '../../package.json');
-const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+const packageJson: { main: string; bin: { patchworks: string }; name: string } = JSON.parse(
+  fs.readFileSync(packageJsonPath, 'utf8')
+);
 
 const resolveWithFallback = (
-  relativePath,
-  fallbackExtensions = ['.js', '.mjs', '.cjs', '.ts']
-) => {
+  relativePath: string,
+  fallbackExtensions: string[] = ['.js', '.mjs', '.cjs', '.ts']
+): string => {
   const resolvedPath = path.resolve(__dirname, '../../', relativePath);
   if (fs.existsSync(resolvedPath)) {
     return resolvedPath;
@@ -87,7 +89,7 @@ describe('CLI module structure', () => {
       return;
     }
 
-    const result = spawnSync('node', [binPath, '--help'], {
+    const result: SpawnSyncReturns<string> = spawnSync('node', [binPath, '--help'], {
       encoding: 'utf8',
     });
 
@@ -98,7 +100,7 @@ describe('CLI module structure', () => {
   test('package.json has correct configuration', () => {
     expect(packageJson.name).toBe('patchworks');
     expect(packageJson.bin).toBeDefined();
-    expect(['./bin/patchworks.js', './bin/patchworks.ts']).toContain(packageJson.bin.patchworks);
-    expect(['src/cli/index.js', 'src/cli/index.ts']).toContain(packageJson.main);
+    expect(['./bin/patchworks.js', './bin/patchworks.ts', './dist/bin/patchworks.js']).toContain(packageJson.bin.patchworks);
+    expect(['src/cli/index.js', 'src/cli/index.ts', 'dist/src/cli/index.js']).toContain(packageJson.main);
   });
 });

@@ -9,7 +9,7 @@ export default defineConfig({
     include: ['src/**/*.test.{js,ts}'],
     
     // Global test setup
-    setupFiles: ['./src/__tests__/setup.js'],
+    setupFiles: ['./src/__tests__/setup.ts'],
     
     // Coverage configuration
     coverage: {

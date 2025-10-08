@@ -75,6 +75,28 @@ interface ExcludingOptions {
 }
 
 /**
+ * Logger interface for type-safe logging across the application
+ */
+export interface Logger {
+  error(message: string, data?: any): void;
+  warn(message: string, data?: any): void;
+  info(message: string): void;
+  debug(message: string): void;
+  success(message: string): void;
+  message(message: string): void;
+  separator(extraContent?: string): void;
+  fallback(field: string, fallbackValue: string): void;
+  logReviewState(packageName: string, state: 'evaluating' | 'skipping', metadata?: ReviewMetadata): void;
+  skipping(options: DifficultyOptions): void;
+  evaluating(options: DifficultyOptions): void;
+  excluding(packageName: string, options?: ExcludingOptions): void;
+  packageReport(pkg: Package): void;
+  patchworks(): void;
+  heading(text: string): void;
+  titleHeading(text: string): void;
+}
+
+/**
  * Summarizes categorized notes by counting the number of entries in each category.
  * Returns an object with totals for each category.
  * @param categorizedNotes - An array of categorized notes.
@@ -256,17 +278,21 @@ export function success(message: string): void {
 /**
  * Logs warning messages.
  * @param message - The warning message.
+ * @param data - Optional data to log alongside the message.
  */
-export function warn(message: string): void {
-  console.warn(`${styles.warning('[WARNING]')} ${message}`);
+export function warn(message: string, data?: any): void {
+  const formatted = data ? `${message} ${JSON.stringify(data, null, 2)}` : message;
+  console.warn(`${styles.warning('[WARNING]')} ${formatted}`);
 }
 
 /**
  * Logs error messages.
  * @param message - The error message.
+ * @param data - Optional data to log alongside the message.
  */
-export function error(message: string): void {
-  console.error(`${styles.error('[ERROR]')} ${message}`);
+export function error(message: string, data?: any): void {
+  const formatted = data ? `${message} ${JSON.stringify(data, null, 2)}` : message;
+  console.error(`${styles.error('[ERROR]')} ${formatted}`);
 }
 
 /**
@@ -311,10 +337,14 @@ export function heading(message: string): void {
 
 /**
  * Logs a separator for better readability.
+ * @param extraContent - Optional extra content to display after the separator.
  */
-export function separator(): void {
+export function separator(extraContent?: string): void {
   if (process.env.DEBUG) {
     console.log(styles.separator);
+    if (extraContent) {
+      console.log(extraContent);
+    }
   }
 }
 
@@ -404,7 +434,7 @@ export function fallback(field: string, fallbackValue: string): void {
   }
 }
 
-const logger = {
+const logger: Logger = {
   packageReport,
   patchworks,
   message,

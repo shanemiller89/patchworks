@@ -11,6 +11,7 @@ export interface StylesType {
   neutral: ChalkInstance
   generic: ChalkInstance
   link: ChalkInstance
+  message: ChalkInstance
   separator: string
   debug: ChalkInstance
   evaluatingState: ChalkInstance
@@ -42,6 +43,7 @@ export const styles: StylesType = {
   neutral: chalk.dim,
   generic: chalk.bold.dim,
   link: chalk.underline.cyan,
+  message: chalk.cyan,
   separator: chalk.gray('='.repeat(40)),
   // ---
   debug: chalk.bold.gray,
@@ -67,11 +69,11 @@ export const styles: StylesType = {
 
 export interface BoxOptions {
   title: string
-  titleAlignment: string
-  float?: string
+  titleAlignment: 'center' | 'left' | 'right'
+  float?: 'center' | 'left' | 'right'
   padding: number
   margin: number
-  borderStyle: string
+  borderStyle: 'single' | 'double' | 'round' | 'bold' | 'singleDouble' | 'doubleSingle' | 'classic' | 'none'
   borderColor: string
   backgroundColor: string
 }

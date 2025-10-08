@@ -2,19 +2,9 @@ import logger from '../reports/logger.js'
 import { execSync } from 'child_process'
 import fs from 'fs/promises'
 import path from 'path'
+import type { IncludedPackage } from '../types/index.js'
 
-export interface PackageMetadata {
-  packageName: string
-  current: string
-  latest: string
-  updateType: string
-  [key: string]: any
-}
-
-export interface IncludedPackage {
-  packageName: string
-  metadata: PackageMetadata
-}
+export type { IncludedPackage }
 
 interface PackageJson {
   dependencies?: Record<string, string>

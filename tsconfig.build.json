@@ -4,9 +4,10 @@
     "noEmit": false,
     "allowJs": false,
     "checkJs": false,
-    "outDir": "./",
+    "outDir": "./dist",
     "rootDir": "./",
-    "declaration": false,
+    "declaration": true,
+    "declarationMap": true,
     "emitDeclarationOnly": false
   },
   "include": [
@@ -17,7 +18,9 @@
     "reports/**/*.ts",
     "src/**/*.ts",
     "tasks/**/*.ts",
-    "utils/**/*.ts"
+    "utils/**/*.ts",
+    "versionLogs/**/*.ts",
+    "analysis/**/*.ts"
   ],
   "exclude": [
     "node_modules",

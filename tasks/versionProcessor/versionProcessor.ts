@@ -256,11 +256,6 @@ export async function processPackageVersions(
         );
         if (!shouldContinue) {
           throw new Error('Operation cancelled by the user.');
-        } else {
-          return {
-            includedPackages: ctx.includedPackages,
-            excludedPackages: ctx.excludedPackages,
-          };
         }
       },
       rendererOptions: { bottomBar: 999 },

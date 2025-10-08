@@ -61,12 +61,19 @@ export async function main(options: FinalOptions): Promise<void> {
       {
         title: 'Evaluate outdated packages',
         task: async (ctx: TaskContext, task: any) => {
+          // processPackageVersions populates ctx.includedPackages and ctx.excludedPackages directly
           return await processPackageVersions(task, options)
         },
       },
       // Step 3: Fetch release notes and changelogs
       {
         title: 'Fetch release notes and changelogs',
+        skip: (ctx: TaskContext) => {
+          if (!ctx.includedPackages || ctx.includedPackages.length === 0) {
+            return 'No packages to process'
+          }
+          return false
+        },
         task: async (ctx: TaskContext, task: any) => {
           const subTasks = ctx.includedPackages!.map((pkg: PackageWithLogs) => ({
             title: `Fetch data for ${pkg.packageName}`,
@@ -186,6 +193,12 @@ export async function main(options: FinalOptions): Promise<void> {
       // Step 4: Parse and categorize logs
       {
         title: 'Parse and categorize logs',
+        skip: (ctx: TaskContext) => {
+          if (!ctx.includedPackages || ctx.includedPackages.length === 0) {
+            return 'No packages to process'
+          }
+          return false
+        },
         task: async (ctx: TaskContext, task: any) => {
           const subTasks = ctx.includedPackages!.map((pkg: PackageWithLogs) => ({
             title: `Parse logs for ${pkg.packageName}`,

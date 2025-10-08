@@ -79,6 +79,7 @@ export async function fetchChangelog({
       try {
         const tarballResponse = await axios.get(tarballUrl, {
           responseType: 'arraybuffer',
+          timeout: 30000, // 30 second timeout
         });
         if (tarballResponse.status !== 200) {
           logger.warn(`Failed to fetch tarball: ${tarballResponse.statusText}`);
@@ -86,7 +87,15 @@ export async function fetchChangelog({
         }
 
         const tarballBuffer = Buffer.from(tarballResponse.data);
-        const changelogContent = await extractChangelogFromTarball(tarballBuffer);
+        const changelogContent = await Promise.race([
+          extractChangelogFromTarball(tarballBuffer),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Tarball extraction timeout')), 30000)
+          )
+        ]).catch(err => {
+          logger.warn(`Tarball extraction failed or timed out: ${err.message}`);
+          return null;
+        }) as string | null;
 
         if (changelogContent) {
           logger.success(`Changelog extracted successfully from tarball.`);

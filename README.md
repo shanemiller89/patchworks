@@ -1,15 +1,15 @@
 # Patchworks
 
-[![npm version](https://badge.fury.io/js/patchworks.svg)](https://badge.fury.io/js/patchworks)
-[![Downloads](https://img.shields.io/npm/dm/patchworks.svg)](https://www.npmjs.com/package/patchworks)
+[![npm version](https://badge.fury.io/js/patchworks-cli.svg)](https://badge.fury.io/js/patchworks-cli)
+[![Downloads](https://img.shields.io/npm/dm/patchworks-cli.svg)](https://www.npmjs.com/package/patchworks-cli)
 [![CI](https://github.com/shanemiller89/patchworks/workflows/CI/badge.svg)](https://github.com/shanemiller89/patchworks/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/node/v/patchworks.svg)](https://nodejs.org/)
+[![Node.js Version](https://img.shields.io/node/v/patchworks-cli.svg)](https://nodejs.org/)
 
 ![Patchworks Logo](https://github.com/shanemiller89/patchworks/blob/main/assets/patchworks_title.png)
 
 ## Overview
-Patchworks is a powerful CLI tool designed to streamline version management and change tracking in software projects. It helps developers efficiently manage dependency updates by providing semantic versioning analysis, breaking change detection, and batch selection capabilities.
+Patchworks is a powerful CLI tool designed to streamline version management and change tracking in software projects. It helps developers efficiently manage dependency updates by providing semantic versioning analysis, breaking change detection, and batch selection capabilities with AI-powered analysis for intelligent prioritization.
 
 
 
@@ -21,6 +21,7 @@ Patchworks is a powerful CLI tool designed to streamline version management and 
 - Validates package metadata to ensure required fields are present.
 - Categorizes release notes into various types such as features, fixes, and breaking changes.
 - Computes TF-IDF rankings for important terms in release notes.
+- AI-powered analysis for intelligent prioritization (optional).
 - Provides a user-friendly command-line interface for managing updates.
 
 ![Patchworks Menu](https://github.com/shanemiller89/patchworks/blob/main/assets/patchworks_menu.png)
@@ -30,13 +31,13 @@ Patchworks is a powerful CLI tool designed to streamline version management and 
 ### Global Installation (Recommended)
 Install Patchworks globally to use it from any directory:
 ```bash
-npm install -g patchworks
+npm install -g patchworks-cli
 ```
 
 ### Local Installation
 Install Patchworks in your project:
 ```bash
-npm install patchworks
+npm install patchworks-cli
 ```
 
 ### Development Installation
@@ -78,9 +79,9 @@ If you're using a Node.js version manager (like nvm, asdf, or n), you might need
 - **n**: No additional steps needed
 
 If the `patchworks` command is not found after installation:
-1. Verify the installation: `npm list -g patchworks`
+1. Verify the installation: `npm list -g patchworks-cli`
 2. Check your PATH: `echo $PATH`
-3. Try reinstalling: `npm uninstall -g patchworks && npm install -g patchworks`
+3. Try reinstalling: `npm uninstall -g patchworks-cli && npm install -g patchworks-cli`
 
 ## Usage
 
@@ -215,8 +216,8 @@ Patchworks can also be used as a module in your Node.js applications.
 ### Basic Usage
 
 ```javascript
-import { main } from 'patchworks';
-import { readConfig } from 'patchworks/config/configUtil.js';
+import { main } from 'patchworks-cli';
+import { readConfig } from 'patchworks-cli/config/configUtil.js';
 
 // Run patchworks programmatically
 const options = {
@@ -247,7 +248,7 @@ Main entry point for running patchworks programmatically.
 Read configuration from `patchworks-config.json`.
 
 ```javascript
-import { readConfig } from 'patchworks/config/configUtil.js';
+import { readConfig } from 'patchworks-cli/config/configUtil.js';
 
 const config = await readConfig();
 console.log(config); // { level: 'minor', limit: 10, ... }
@@ -256,7 +257,7 @@ console.log(config); // { level: 'minor', limit: 10, ... }
 #### Configuration Utilities
 
 ```javascript
-import { generateConfig } from 'patchworks/config/configUtil.js';
+import { generateConfig } from 'patchworks-cli/config/configUtil.js';
 
 // Generate a default configuration file
 await generateConfig();
@@ -266,14 +267,14 @@ await generateConfig();
 
 #### TF-IDF Analysis
 ```javascript
-import { computeTFIDFRanking } from 'patchworks/analysis/computeTFIDFRanking.js';
+import { computeTFIDFRanking } from 'patchworks-cli/analysis/computeTFIDFRanking.js';
 
 const rankings = computeTFIDFRanking(releaseNotes);
 ```
 
 #### Log Categorization
 ```javascript
-import { categorizeLogs } from 'patchworks/analysis/categorizeLogs.js';
+import { categorizeLogs } from 'patchworks-cli/analysis/categorizeLogs.js';
 
 const categories = categorizeLogs(logData);
 ```
@@ -281,13 +282,13 @@ const categories = categorizeLogs(logData);
 ### Version Processing
 
 ```javascript
-import { processVersions } from 'patchworks/tasks/versionProcessor/versionProcessor.js';
+import { processVersions } from 'patchworks-cli/tasks/versionProcessor/versionProcessor.js';
 
 const results = await processVersions(packages, options);
 ```
 
 ## Notes
-- This is the initial stable release of Patchworks
+- This is the stable release of Patchworks with AI-powered analysis capabilities
 - Feedback and bug reports are welcome via GitHub issues
 - For installation issues, please check the troubleshooting section above
 - See [CHANGELOG.md](CHANGELOG.md) for version history and breaking changes

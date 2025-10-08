@@ -5,6 +5,77 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-10-08
+
+### Added
+- **🤖 AI-Powered Critical Findings Analysis**
+  - Integrated AI analysis for dependency updates using Anthropic Claude, OpenAI GPT-4, and Google Gemini
+  - Automatic detection of breaking changes, security issues, and migration requirements
+  - Intelligent recommendations for update order based on dependencies and risk
+  - Configurable focus areas (breaking changes, security, deprecation, performance, migration)
+  - Multi-provider support with automatic fallback (Anthropic → OpenAI → Gemini)
+  - Provider-specific model selection (Claude 3.5 Sonnet, GPT-4o, Gemini 2.0 Flash)
+- **📄 Rich Markdown Reports with Code Examples**
+  - AI generates comprehensive markdown reports with syntax-highlighted code blocks
+  - Before/after code examples for breaking changes
+  - Mermaid diagrams showing dependency flow and update sequence
+  - Detailed migration steps with bash commands and configuration changes
+  - Color-coded risk assessment (safe, caution, breaking)
+- **🎨 CLI Markdown Preview**
+  - Beautiful terminal markdown renderer with syntax highlighting
+  - Displays first 40 lines of AI analysis directly in CLI
+  - Supports JavaScript, TypeScript, Bash, JSON, and Diff highlighting
+  - Formatted headers, lists, blockquotes, and inline code
+  - Mermaid diagram placeholders with instructions to view full report
+- **⚙️ Interactive AI Setup Wizard**
+  - Guided setup process for AI configuration via "Generate Config" menu option
+  - Support for all three providers (Anthropic, OpenAI, Gemini)
+  - Secure API key handling with skip option for manual configuration later
+  - Focus area selection (breaking changes, security, deprecation, etc.)
+  - Provider selection (auto with fallback or specific provider)
+- **🔑 Enhanced Configuration Management**
+  - AI configuration section in `patchworks-config.json`
+  - Toggle AI analysis on/off from main menu (keyboard shortcut: 'a')
+  - Separate model configuration per provider (anthropicModel, openaiModel, geminiModel)
+  - Security comments about API key storage in generated config
+  - Provider-specific defaults (Claude 3.5 Sonnet, GPT-4o, Gemini 2.0 Flash)
+- **🐛 Debug Logging for AI Requests**
+  - Detailed logging of AI API requests (prompts sent)
+  - Response logging with content preview and usage metadata
+  - Masked API key display for security verification
+  - Package data structure logging (releaseNotes type, source, etc.)
+  - HTTP status codes and error details for troubleshooting
+- **📝 Comprehensive Release Notes Handling**
+  - Support for string, array, and object release note formats
+  - Automatic extraction from multiple data structures
+  - Changelog fallback when release notes unavailable
+  - Explicit warnings when no release data found
+  - Up to 5000 characters of raw release notes sent to AI
+
+### Changed
+- **Updated CLI Options**
+  - Added `--ai-summary` flag to trigger AI-powered analysis
+  - AI analysis respects debug mode for verbose output
+- **Enhanced Error Handling**
+  - Graceful workflow degradation when AI analysis fails
+  - Detailed error messages for API quota issues
+  - Fallback to other providers when primary fails
+  - Clear user communication about AI-related issues
+- **Improved Console Output**
+  - Enhanced AI findings display with quick status indicators
+  - Better visual hierarchy with colored sections
+  - File location prominently displayed for full reports
+- **Dependencies**
+  - Added `@anthropic-ai/sdk` for Claude integration
+  - Added `openai` for GPT-4 integration
+  - Added `@google/genai` for Gemini 2.0 integration
+
+### Fixed
+- Release notes format handling now supports all data structures (string, array, object)
+- Null reference error in `categorizeLogs.ts` when processing release notes
+- AI workflow failures no longer block main dependency update process
+- Proper error messages when API keys are missing
+
 ## [0.1.0] - 2024-06-17
 
 ### Added

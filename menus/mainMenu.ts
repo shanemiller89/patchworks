@@ -46,9 +46,13 @@ export async function renderMainMenu(options: MenuOptions): Promise<void> {
   )
   const install = resolveBooleanOption(options.install, config?.install, true)
   
+  // Mutable state for report level and level scope cycling
+  let reportLevel: Level = config?.level ?? 'minor'
+  let currentLevelScope = levelScope
+  
   // AI configuration status
   const aiEnabled = config?.ai?.enabled ?? false
-  const aiHasKeys = !!(config?.ai?.anthropicApiKey || config?.ai?.openaiApiKey)
+  const aiHasKeys = !!(config?.ai?.anthropicApiKey || config?.ai?.openaiApiKey || config?.ai?.geminiApiKey)
   const aiStatus = aiEnabled 
     ? chalk.green('Enabled') 
     : chalk.red('Disabled')
@@ -93,12 +97,13 @@ ${chalk.blue(DOUBLE_LINE)}
   ${chalk.white('★')} ${chalk.gray.bold('Update Level:')}               ${
       !level ? chalk.redBright('Not Set') : chalk.greenBright(level)
     }
+  ${chalk.white('★')} ${chalk.gray.bold('Report Level:')}               ${chalk.greenBright(reportLevel)}
   ${chalk.white('♯')} ${chalk.gray.bold(
       'Max Updates:',
     )}                ${chalk.greenBright(limit || 'Infinite')}
   ${chalk.white('◈')} ${chalk.gray.bold(
       'Dependency Scope:',
-    )}           ${chalk.greenBright(levelScope)}
+    )}           ${chalk.greenBright(currentLevelScope)}
 ${chalk.blue(SINGLE_LINE)}
   ${chalk.white('✿')} ${chalk.gray.bold('Summary Mode:')}               ${
       summary ? chalk.green('Enabled') : chalk.red('Disabled')
@@ -205,11 +210,8 @@ ${chalk.blue(DOUBLE_LINE)}
     console.log(chalk.blue(DOUBLE_LINE))
     console.log(
       chalk.blue(
-        `Use ${chalk.bold.blueBright(
-          '↑ ↓',
-        )} keys to navigate, press ${chalk.bold.blueBright(
-          'Enter',
-        )} to select.`,
+        `Use ${chalk.bold.blueBright('↑ ↓')} to navigate, ${chalk.bold.blueBright('Enter')} to select.\n` +
+        `Press ${chalk.bold.blueBright('r')} to cycle report level, ${chalk.bold.blueBright('s')} to toggle scope, ${chalk.bold.blueBright('a')} to toggle AI.`,
       ),
     )
   }
@@ -245,7 +247,7 @@ ${chalk.blue(DOUBLE_LINE)}
           const finalOptions: FinalOptions = {
             level: runLevel,
             limit,
-            levelScope,
+            levelScope: currentLevelScope,
             summary,
             showExcluded,
             install,
@@ -253,7 +255,7 @@ ${chalk.blue(DOUBLE_LINE)}
             write: false,
             excludeRepoless: false,
             debug: false,
-            aiSummary: false,
+            aiSummary: aiEnabled,
           }
 
           return await main(finalOptions).then(() => {
@@ -269,7 +271,7 @@ ${chalk.blue(DOUBLE_LINE)}
 
           const finalOptions: FinalOptions = {
             level: 'major',
-            levelScope: 'cascade',
+            levelScope: currentLevelScope,
             limit: null,
             summary: false,
             skipped: false,
@@ -278,7 +280,7 @@ ${chalk.blue(DOUBLE_LINE)}
             excludeRepoless: false,
             debug: false,
             showExcluded: false,
-            aiSummary: false,
+            aiSummary: aiEnabled,
           }
 
           return await main(finalOptions)
@@ -288,9 +290,9 @@ ${chalk.blue(DOUBLE_LINE)}
           
           const finalOptions: FinalOptions = {
             reportsOnly: true,
-            level,
+            level: reportLevel,
             limit,
-            levelScope,
+            levelScope: currentLevelScope,
             summary,
             showExcluded,
             install,
@@ -298,7 +300,7 @@ ${chalk.blue(DOUBLE_LINE)}
             write: false,
             excludeRepoless: false,
             debug: false,
-            aiSummary: false,
+            aiSummary: aiEnabled,
           }
 
           return await main(finalOptions).then(() => {
@@ -310,7 +312,7 @@ ${chalk.blue(DOUBLE_LINE)}
           
           const finalOptions: FinalOptions = {
             reportsOnly: true,
-            level: 'major',
+            level: reportLevel,
             levelScope: 'cascade',
             showExcluded: true,
             limit: null,
@@ -320,7 +322,7 @@ ${chalk.blue(DOUBLE_LINE)}
             install: true,
             excludeRepoless: false,
             debug: false,
-            aiSummary: false,
+            aiSummary: aiEnabled,
           }
 
           return await main(finalOptions).then(() => {
@@ -360,6 +362,16 @@ ${chalk.blue(DOUBLE_LINE)}
           console.log('Exiting...')
           process.exit(0)
       }
+    } else if (str === 'r' || str === 'R') {
+      // Cycle through report levels: minor -> major -> patch -> minor
+      const levels: Level[] = ['minor', 'major', 'patch']
+      const currentIndex = levels.indexOf(reportLevel)
+      reportLevel = levels[(currentIndex + 1) % 3]
+      renderMenu()
+    } else if (str === 's' || str === 'S') {
+      // Toggle level scope: strict <-> cascade
+      currentLevelScope = currentLevelScope === 'strict' ? 'cascade' : 'strict'
+      renderMenu()
     } else if (str === 'a' || str === 'A') {
       // Toggle AI enabled/disabled
       if (!config) {

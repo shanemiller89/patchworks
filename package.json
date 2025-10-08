@@ -1,7 +1,7 @@
 {
   "name": "patchworks-cli",
-  "version": "0.1.0",
-  "description": "A CLI tool to manage dependency updates by semantic versioning, breaking change detection, and batch selection for efficient prioritization",
+  "version": "0.2.0",
+  "description": "A CLI tool to manage dependency updates by semantic versioning, breaking change detection, with batch selection and AI-powered analysis for efficient prioritization",
   "main": "dist/src/cli/index.js",
   "bin": {
     "patchworks": "./dist/bin/patchworks.js"

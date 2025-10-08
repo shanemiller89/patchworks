@@ -103,9 +103,14 @@ export function generatePatchworkReport(data: PackageWithLogs): string {
   try {
     const { packageName, categorizedNotes } = data;
 
+    if (!categorizedNotes) {
+      logger.warn(`No categorized notes available for ${packageName}`);
+      return `# ${packageName} Update Report\n\nNo categorized release notes available.\n`;
+    }
+
     if (!Array.isArray(categorizedNotes)) {
-      logger.error('Error: categorizedNotes is not an array:', categorizedNotes);
-      return 'Error: categorizedNotes is not an array.';
+      logger.error(`categorizedNotes is not an array for ${packageName}: ${JSON.stringify(categorizedNotes)}`);
+      return `# ${packageName} Update Report\n\nError: Invalid categorized notes format.\n`;
     }
 
     logger.debug(`categorizedNotes: ${categorizedNotes}`);

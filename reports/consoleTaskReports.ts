@@ -14,6 +14,7 @@ import _ from 'lodash';
 import { SKIPPED, UNKNOWN } from '../utils/constants.js';
 import { TableGenerator, TableCell } from '../utils/TableGenerator.js';
 import { styles } from './styles.js';
+import { renderMarkdownPreview } from '../utils/markdownRenderer.js';
 
 interface PackageMetadata {
   name?: string;
@@ -330,9 +331,8 @@ export function displayAIFindings(findings: any, showPreview: boolean = true): s
     output += chalk.bold.cyan('📄 Analysis Preview:\n');
     output += chalk.dim('─'.repeat(100)) + '\n\n';
     
-    // Import and use markdown renderer
+    // Use markdown renderer
     try {
-      const { renderMarkdownPreview } = require('../utils/markdownRenderer.js');
       const preview = renderMarkdownPreview(markdownContent, 40);
       output += preview + '\n\n';
     } catch (error) {

@@ -87,14 +87,19 @@ export async function fetchChangelog({
         }
 
         const tarballBuffer = Buffer.from(tarballResponse.data);
+        
+        // Use AbortController pattern to properly cleanup timeout
+        let timeoutId: NodeJS.Timeout | undefined;
         const changelogContent = await Promise.race([
           extractChangelogFromTarball(tarballBuffer),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Tarball extraction timeout')), 30000)
-          )
+          new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(() => reject(new Error('Tarball extraction timeout')), 30000);
+          })
         ]).catch(err => {
           logger.warn(`Tarball extraction failed or timed out: ${err.message}`);
           return null;
+        }).finally(() => {
+          if (timeoutId) clearTimeout(timeoutId);
         }) as string | null;
 
         if (changelogContent) {

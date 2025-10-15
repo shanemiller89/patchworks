@@ -84,10 +84,10 @@ export async function promptUserForLevel(): Promise<Level> {
       },
     ])
 
-    console.log(`Selected update level: ${level}`)
+    logger.info(`Selected update level: ${level}`)
     return level as Level
   } catch (error) {
-    console.error(`An error occurred during level selection: ${(error as Error).message}`)
+    logger.error(`An error occurred during level selection: ${(error as Error).message}`)
     throw error
   }
 }
@@ -96,9 +96,12 @@ export async function promptUserForReportDirectory(task: TaskInterface): Promise
   const defaultDir: string = path.join(process.cwd(), 'patchworks-reports')
 
   // Check if the default directory already exists
-  if (fs.existsSync(defaultDir)) {
+  try {
+    await fs.promises.access(defaultDir)
     logger.info(`Default directory already exists: ${defaultDir}`)
     return defaultDir // Return the existing directory path
+  } catch {
+    // Directory doesn't exist, continue with prompts
   }
 
   try {
@@ -137,17 +140,18 @@ export async function promptUserForReportDirectory(task: TaskInterface): Promise
 
       if (createReportsFolder) {
         const reportsFolderPath: string = path.join(reportDir, 'patchworks-reports')
-        if (!fs.existsSync(reportsFolderPath)) {
-          fs.mkdirSync(reportsFolderPath, { recursive: true })
-          logger.info(`Created directory: ${reportsFolderPath}`)
-        } else {
+        try {
+          await fs.promises.access(reportsFolderPath)
           logger.info(`Directory already exists: ${reportsFolderPath}`)
+        } catch {
+          await fs.promises.mkdir(reportsFolderPath, { recursive: true })
+          logger.info(`Created directory: ${reportsFolderPath}`)
         }
         reportDir = reportsFolderPath // Set the reports folder as the report directory
       }
     } else {
       // Step 4: Create the default "patchworks-reports" folder if it doesn't exist
-      fs.mkdirSync(defaultDir, { recursive: true })
+      await fs.promises.mkdir(defaultDir, { recursive: true })
       logger.info(`Created default directory: ${defaultDir}`)
       reportDir = defaultDir // Use the default directory
     }

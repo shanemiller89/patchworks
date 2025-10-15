@@ -165,8 +165,8 @@ export function generateOriginalNotes(data: PackageWithLogs): string {
 
     const notes: ReleaseNote[] =
       _.isEmpty(releaseNotes) ||
-      releaseNotes == UNKNOWN ||
-      releaseNotes == 'SKIPPED'
+      releaseNotes === UNKNOWN ||
+      releaseNotes === 'SKIPPED'
         ? [{ notes: changelog || '', version: ALL }]
         : (releaseNotes as ReleaseNote[]);
 
@@ -177,8 +177,8 @@ export function generateOriginalNotes(data: PackageWithLogs): string {
 
     const header = `# ${packageName} ${
       _.isEmpty(releaseNotes) ||
-      releaseNotes == UNKNOWN ||
-      releaseNotes == 'SKIPPED'
+      releaseNotes === UNKNOWN ||
+      releaseNotes === 'SKIPPED'
         ? 'Changelog'
         : 'Release Notes'
     } Notes\n`;

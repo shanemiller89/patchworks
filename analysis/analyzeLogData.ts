@@ -229,7 +229,7 @@ export async function parseIncludedPackage(pkg: PackageData): Promise<ParseResul
     );
 
     const notes =
-      _.isEmpty(releaseNotes) || releaseNotes == UNKNOWN || releaseNotes == 'SKIPPED'
+      _.isEmpty(releaseNotes) || releaseNotes === UNKNOWN || releaseNotes === 'SKIPPED'
         ? [{ notes: changelog || '', version: ALL }]
         : (releaseNotes as ReleaseNote[]);
 

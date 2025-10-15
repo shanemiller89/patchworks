@@ -209,8 +209,8 @@ export async function main(options: FinalOptions): Promise<void> {
             skip: () => {
               const { releaseNotes, changelog } = pkg
               return (_.isEmpty(releaseNotes) ||
-                releaseNotes == UNKNOWN ||
-                releaseNotes == SKIPPED) &&
+                releaseNotes === UNKNOWN ||
+                releaseNotes === SKIPPED) &&
                 (!changelog || changelog === UNKNOWN || changelog === SKIPPED)
                 ? 'Both releaseNotes and changelog are unavailable, skipping parsing.'
                 : false

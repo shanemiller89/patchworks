@@ -396,7 +396,7 @@ ${chalk.blue(DOUBLE_LINE)}
       const path = await import('path')
       const configPath = path.resolve(process.cwd(), 'patchworks-config.json')
       try {
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+        await fs.promises.writeFile(configPath, JSON.stringify(config, null, 2))
         console.log(chalk.green(`\n✓ AI Analysis ${newAiEnabled ? 'enabled' : 'disabled'}`))
         
         if (newAiEnabled && !aiHasKeys) {

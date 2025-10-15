@@ -100,7 +100,8 @@ export async function generateConfig(aiConfig?: AIConfigInput): Promise<void> {
       }
     }
     
-    fs.writeFileSync(outputPath, jsonString)
+    await fs.promises.writeFile(outputPath, jsonString)
+    // Note: Using console.log here is intentional for config generation output
     console.log(`Configuration saved to ${outputPath}`)
   } catch (error) {
     console.error(`Failed to write configuration: ${(error as Error).message}`)
@@ -111,10 +112,16 @@ export async function readConfig(): Promise<PatchworksConfig | null> {
   const configPath = path.resolve(process.cwd(), 'patchworks-config.json')
 
   try {
-    const configFile = fs.readFileSync(configPath, 'utf-8')
+    const configFile = await fs.promises.readFile(configPath, 'utf-8')
     return JSON.parse(configFile) as PatchworksConfig
   } catch (error) {
-    console.error(`Failed to read configuration: ${(error as Error).message}`)
-    return null // Return null if the config cannot be read
+    // Only log if it's not a "file not found" error
+    // Note: Using console.error here is intentional for config reading errors
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.error(`Failed to read configuration: ${(error as Error).message}`)
+    }
+    // Return null if config doesn't exist or can't be read
+    // Callers should handle null appropriately
+    return null
   }
 }

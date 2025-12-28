@@ -287,6 +287,82 @@ import { processVersions } from 'patchworks-cli/tasks/versionProcessor/versionPr
 const results = await processVersions(packages, options);
 ```
 
+## Development
+
+### Setting Up Development Environment
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/shanemiller89/patchworks.git
+   cd patchworks
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Build the project**
+   ```bash
+   npm run build
+   ```
+
+4. **Run tests**
+   ```bash
+   npm test
+   ```
+
+5. **Run linter**
+   ```bash
+   npm run lint
+   ```
+
+### Available Scripts
+
+- `npm run dev` - Run the CLI in development mode with tsx
+- `npm run build` - Build the TypeScript project
+- `npm test` - Run tests with coverage
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:ui` - Run tests with UI
+- `npm run lint` - Run ESLint on the codebase
+- `npm run lint:fix` - Run ESLint and auto-fix issues
+- `npm run format` - Format code with Prettier
+- `npm run type-check` - Run TypeScript type checking
+- `npm run local:install` - Create a global symlink for local development
+- `npm run local:uninstall` - Remove the global symlink
+
+### CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+1. **CI Workflow** (`.github/workflows/ci.yml`)
+   - Runs on every push to `main` and `develop` branches
+   - Runs on all pull requests to `main`
+   - Tests on Node.js versions: 14, 16, 18, 20
+   - Steps: Lint → Build → Test → Package installation test
+   - Includes security audit and package validation
+
+2. **CodeQL Workflow** (`.github/workflows/codeql.yml`)
+   - Security scanning for JavaScript/TypeScript
+   - Runs weekly on Mondays
+   - Runs on pushes and PRs to `main`
+
+3. **Publish Workflow** (`.github/workflows/publish.yml`)
+   - Automatically publishes to NPM on release
+   - Runs full test suite before publishing
+   - Verifies publication after deployment
+
+### Contributing
+
+Before submitting a pull request:
+
+1. Ensure all tests pass: `npm test`
+2. Run the linter: `npm run lint`
+3. Build the project: `npm run build`
+4. Test the package installation: `./scripts/pre-publish.sh`
+
+All CI checks must pass before merging.
+
 ## Notes
 - This is the stable release of Patchworks with AI-powered analysis capabilities
 - Feedback and bug reports are welcome via GitHub issues

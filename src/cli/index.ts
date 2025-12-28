@@ -7,7 +7,6 @@ import logger from '../../reports/logger.js'
 import { createOutputErrorHandler } from './errorHandler.js'
 import { renderMainMenu } from '../../menus/mainMenu.js'
 import { readConfig, PatchworksConfig } from '../../config/configUtil.js'
-import { resolveInstallFlag } from './installOption.js'
 import { main } from '../../tasks/main.js'
 import { resolveBooleanOption } from './booleanOption.js'
 

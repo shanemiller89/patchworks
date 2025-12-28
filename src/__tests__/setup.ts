@@ -1,4 +1,4 @@
-import { beforeAll, afterAll, vi, test, expect, type Mock } from 'vitest';
+import { afterAll, vi, test, expect, type Mock } from 'vitest';
 
 // Global test setup - Mock console methods to reduce noise in tests
 global.console = {

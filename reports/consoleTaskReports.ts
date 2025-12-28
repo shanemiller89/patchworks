@@ -335,7 +335,7 @@ export function displayAIFindings(findings: any, showPreview: boolean = true): s
     try {
       const preview = renderMarkdownPreview(markdownContent, 40);
       output += preview + '\n\n';
-    } catch (error) {
+    } catch {
       // Fallback if renderer fails
       output += chalk.gray(summary) + '\n\n';
     }

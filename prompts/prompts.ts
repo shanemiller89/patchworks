@@ -178,8 +178,8 @@ export async function promptUserForPackageSelection(task: TaskInterface, package
       throw new Error('No packages available for selection.')
     }
 
-    const choices: PackageChoice[] = packages.map((pkg) => {
-      const { categorizedNotes, metadata } = pkg
+    const choices: PackageChoice[] = packages.map((packageData) => {
+      const { categorizedNotes, metadata } = packageData
       const { updateType, updatingDifficulty } = metadata
       const categoryValues = summarizeCategorizedNotes(categorizedNotes)
       const { breaking_change } = categoryValues
@@ -190,15 +190,15 @@ export async function promptUserForPackageSelection(task: TaskInterface, package
       const styledUpdateType = (styles as any)[updateType](_.upperCase(updateType))
 
       return {
-        name: pkg.packageName,
-        message: `${pkg.packageName} (Current: ${
-          pkg.metadata.current
+        name: packageData.packageName,
+        message: `${packageData.packageName} (Current: ${
+          packageData.metadata.current
         } => Latest: ${
-          pkg.metadata.latest
+          packageData.metadata.latest
         } - ${styledUpdateType} (Score of ${styles.generic(
           updatingDifficulty.toString(),
         )}) - Potential Breaking Changes: ${hasBreakingChange}`,
-        value: pkg.packageName,
+        value: packageData.packageName,
       }
     })
 
@@ -211,8 +211,8 @@ export async function promptUserForPackageSelection(task: TaskInterface, package
           value.length ? true : 'You must select at least one package.',
       })
 
-    const selectedPackages: PackageForSelection[] = packages.filter((pkg) =>
-      selectedPackageNames.includes(pkg.packageName),
+    const selectedPackages: PackageForSelection[] = packages.filter((packageData) =>
+      selectedPackageNames.includes(packageData.packageName),
     )
 
     if (selectedPackages.length === 0) {

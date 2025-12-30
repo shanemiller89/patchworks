@@ -28,8 +28,8 @@ export async function writeChanges(includedPackages: IncludedPackage[]): Promise
     const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8')
     const packageJson: PackageJson = JSON.parse(packageJsonContent)
 
-    includedPackages.forEach((pkg) => {
-      const { packageName, metadata } = pkg
+    includedPackages.forEach((packageData) => {
+      const { packageName, metadata } = packageData
       const { latest: version } = metadata
 
       // Determine the correct section by inspecting the existing package.json

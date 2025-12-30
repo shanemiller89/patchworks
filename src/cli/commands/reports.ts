@@ -50,8 +50,8 @@ export default async function (
 
   try {
     await main({ reportsOnly: true, ...finalOptions });
-  } catch (err) {
-    logger.error(err);
+  } catch (error) {
+    logger.error(error);
     process.exit(1);
   }
 }

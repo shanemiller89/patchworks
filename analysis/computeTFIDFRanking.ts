@@ -107,7 +107,7 @@ export function computeTFIDFRankings(
   const rankings = Array.from(vector.entries())
     .filter(([term]) => isNotStopword(term, stopwords)) // Exclude stopwords
     .map(([term, score]) => ({ term, score: parseFloat(score.toFixed(4)) })) // Format terms and scores
-    .sort((a, b) => b.score - a.score) // Sort by descending score
+    .sort((termA, termB) => termB.score - termA.score) // Sort by descending score
     .slice(0, termLimit); // Limit to top terms
 
   logger.debug(`TF-IDF Rankings: ${JSON.stringify(rankings, null, 2)}`);

@@ -119,20 +119,20 @@ export function generatePatchworkReport(data: PackageWithLogs): string {
     const packageDetails = generatePackageDetails(data);
 
     const categorizedNotesSection = categorizedNotes
-      .map((note) => {
-        const categories = Object.entries(note.categorized)
+      .map((versionNote) => {
+        const categories = Object.entries(versionNote.categorized)
           .filter(([, items]) => items.length > 0)
           .map(
-            ([category, items]) =>
+            ([categoryName, items]) =>
               `### ${
-                category.charAt(0).toUpperCase() + category.slice(1)
+                categoryName.charAt(0).toUpperCase() + categoryName.slice(1)
               }\n- ${items.join('\n- ')}`
           )
           .join('\n\n');
 
         return `
-## Categorized Notes for Version ${note.version} (Published: ${
-          note.published_at
+## Categorized Notes for Version ${versionNote.version} (Published: ${
+          versionNote.published_at
         })
 ${categories || 'No categorized notes available.'}
 `;
@@ -185,7 +185,7 @@ export function generateOriginalNotes(data: PackageWithLogs): string {
     const packageDetails = generatePackageDetails(data);
 
     const notesSection = notes
-      .map((note) => `## Version ${note.version}\n${note.notes}`)
+      .map((versionNote) => `## Version ${versionNote.version}\n${versionNote.notes}`)
       .join('\n\n');
 
     const markdown = [header, packageDetails, notesSection].join('\n');

@@ -88,12 +88,12 @@ function highlightCode(code: string, language: string): string {
  */
 function extractCodeBlocks(markdown: string): { markdown: string; codeBlocks: CodeBlock[] } {
   const codeBlocks: CodeBlock[] = [];
-  let index = 0;
+  let blockIndex = 0;
   
-  const processed = markdown.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
-    const language = lang || 'text';
-    codeBlocks.push({ language, code: code.trim() });
-    return `__CODE_BLOCK_${index++}__`;
+  const processed = markdown.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, languageTag, codeContent) => {
+    const language = languageTag || 'text';
+    codeBlocks.push({ language, code: codeContent.trim() });
+    return `__CODE_BLOCK_${blockIndex++}__`;
   });
   
   return { markdown: processed, codeBlocks };
@@ -114,8 +114,8 @@ export function renderMarkdown(markdown: string, maxWidth: number = 100): string
   let inList = false;
   let listIndent = 0;
   
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+    const line = lines[lineIndex];
     const trimmed = line.trim();
     
     // Skip empty lines in some contexts
@@ -159,9 +159,9 @@ export function renderMarkdown(markdown: string, maxWidth: number = 100): string
       output.push('');
       
       // Skip until end of mermaid block
-      i++;
-      while (i < lines.length && !lines[i].trim().startsWith('```')) {
-        i++;
+      lineIndex++;
+      while (lineIndex < lines.length && !lines[lineIndex].trim().startsWith('```')) {
+        lineIndex++;
       }
       continue;
     }

@@ -78,8 +78,8 @@ export function validateApiKeys(
  */
 export function formatPackagesForAI(packages: PackageWithLogs[]): string {
   return packages
-    .map((pkg) => {
-      const { packageName, metadata, releaseNotes, changelog, categorizedNotes, source } = pkg
+    .map((packageData) => {
+      const { packageName, metadata, releaseNotes, changelog, categorizedNotes, source } = packageData
 
       let output = `\n## ${packageName}\n`
       output += `- Current Version: ${metadata.current}\n`
@@ -481,11 +481,11 @@ export async function analyzeWithClaude(
   
   // Debug: Show package data structure
   logger.debug(`\n📦 Package Data Summary:`)
-  packages.forEach(pkg => {
-    logger.debug(`  - ${pkg.packageName}: ${pkg.metadata.current} → ${pkg.metadata.latest}`)
-    logger.debug(`    • releaseNotes type: ${pkg.releaseNotes ? typeof pkg.releaseNotes : 'undefined'}`)
-    logger.debug(`    • changelog type: ${pkg.changelog ? typeof pkg.changelog : 'undefined'}`)
-    logger.debug(`    • source: ${pkg.source || 'unknown'}`)
+  packages.forEach(packageData => {
+    logger.debug(`  - ${packageData.packageName}: ${packageData.metadata.current} → ${packageData.metadata.latest}`)
+    logger.debug(`    • releaseNotes type: ${packageData.releaseNotes ? typeof packageData.releaseNotes : 'undefined'}`)
+    logger.debug(`    • changelog type: ${packageData.changelog ? typeof packageData.changelog : 'undefined'}`)
+    logger.debug(`    • source: ${packageData.source || 'unknown'}`)
   })
   
   const { system, user } = createPrompt(formattedPackages, focusAreas)

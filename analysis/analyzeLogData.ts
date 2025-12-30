@@ -58,14 +58,14 @@ function convertMarkdownToHTML(markdownContent: string): HTMLResult {
   );
 
   try {
-    const md = new MarkdownIt({
+    const markdownParser = new MarkdownIt({
       html: true,
       linkify: true,
     })
       .use(markdownItTaskLists)
       .use(markdownItContainer, 'note');
 
-    let htmlContent = md.render(markdownContent);
+    let htmlContent = markdownParser.render(markdownContent);
 
     // Sanitize the HTML content
     htmlContent = sanitizeHtml(htmlContent);

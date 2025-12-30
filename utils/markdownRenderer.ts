@@ -206,7 +206,7 @@ export function renderMarkdown(markdown: string, maxWidth: number = 100): string
       const text = trimmed.replace(/^[-*+]\s/, '');
       const formatted = formatInlineMarkdown(text);
       // Calculate indentation based on original line leading spaces
-      const leadingSpaces = line.length - line.trimLeft().length;
+      const leadingSpaces = line.length - line.trimStart().length;
       const currentIndent = Math.floor(leadingSpaces / 2);
       
       // Validate indentation consistency within nested lists
@@ -233,7 +233,7 @@ export function renderMarkdown(markdown: string, maxWidth: number = 100): string
         const [, num, text] = match;
         const formatted = formatInlineMarkdown(text);
         // Calculate indentation based on original line leading spaces
-        const leadingSpaces = line.length - line.trimLeft().length;
+        const leadingSpaces = line.length - line.trimStart().length;
         const currentIndent = Math.floor(leadingSpaces / 2);
         
         // Validate indentation consistency within nested lists

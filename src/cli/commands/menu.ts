@@ -1,8 +1,7 @@
 import { renderMainMenu } from '../../../menus/mainMenu.js';
 import { readConfig, PatchworksConfig } from '../../../config/configUtil.js';
 import logger from '../../../reports/logger.js';
-import { resolveBooleanOption } from '../booleanOption.js';
-import { FinalOptions } from '../index.js';
+import { buildFinalOptions } from '../optionsBuilder.js';
 
 interface CommandOptions {
   limit?: number;
@@ -22,31 +21,7 @@ export default async function (
   options: CommandOptions
 ): Promise<void> {
   const config: Partial<PatchworksConfig> = (await readConfig()) || {};
-  const finalOptions: FinalOptions = {
-    level: level ?? config.level ?? null,
-    limit: options.limit ?? config.limit ?? null,
-    levelScope: options.levelScope ?? config.levelScope ?? 'strict',
-    summary: resolveBooleanOption(options.summary, config.summary, false),
-    skipped: resolveBooleanOption(options.skipped, config.skipped, false),
-    write: resolveBooleanOption(options.write, config.write, false),
-    install: resolveBooleanOption(options.install, config.install, true),
-    excludeRepoless: resolveBooleanOption(
-      options.excludeRepoless,
-      config.excludeRepoless,
-      false
-    ),
-    debug: resolveBooleanOption(options.debug, config.debug, false),
-    showExcluded: resolveBooleanOption(
-      options.showExcluded,
-      config.showExcluded,
-      false
-    ),
-    aiSummary: resolveBooleanOption(
-      options.aiSummary,
-      config.ai?.enabled,
-      false
-    ),
-  };
+  const finalOptions = buildFinalOptions(level, options, config);
 
   try {
     await renderMainMenu(finalOptions);

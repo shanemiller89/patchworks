@@ -14,17 +14,6 @@ const PERFORMANCE = 'performance' as const;
 const REFACTORS = 'refactor' as const;
 const CHORES = 'chore' as const;
 
-type Category =
-  | typeof BREAKING_CHANGES
-  | typeof FEATURES
-  | typeof FIXES
-  | typeof DEPRECATIONS
-  | typeof SECURITY
-  | typeof DOCUMENTATION
-  | typeof PERFORMANCE
-  | typeof REFACTORS
-  | typeof CHORES;
-
 interface TagDefinition {
   isA: string | string[];
 }
@@ -260,6 +249,7 @@ const releaseNotePlugin: CompromisePlugin = {
   api: (View: any) => {
     // Enhanced category detection with context awareness
     View.prototype.detectCategory = function (this: any): string | null {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const doc = this;
       const scores: Record<string, number> = {};
 
@@ -305,6 +295,7 @@ const releaseNotePlugin: CompromisePlugin = {
 
     // Improved fuzzy matching with context
     View.prototype.hasBreakingChange = function (this: any): boolean {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const doc = this;
 
       // Direct indicators

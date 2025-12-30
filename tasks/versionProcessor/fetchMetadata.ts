@@ -272,7 +272,7 @@ export async function processPackagesMetadata(
             ...metadata,
           };
         }
-      } catch (error) {
+      } catch {
         results.invalid[pkg] = {
           validationStatus: 'FAILED VALIDATION',
           ...info,

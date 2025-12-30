@@ -774,7 +774,7 @@ export async function generateCriticalFindings(
   const provider = aiConfig.provider || 'auto'
 
   // Helper function to try fallback providers
-  const tryFallback = async (failedProvider: string, error: Error): Promise<AICriticalFindings | null> => {
+  const tryFallback = async (failedProvider: string, _error: Error): Promise<AICriticalFindings | null> => {
     if (provider !== 'auto') return null
     
     // Try providers in order: Anthropic -> OpenAI -> Gemini
@@ -801,42 +801,38 @@ export async function generateCriticalFindings(
     return null
   }
   
-  try {
-    // Try providers based on config
-    if (provider === 'anthropic' || (provider === 'auto' && hasAnthropic)) {
-      logger.debug('Using Anthropic Claude as primary provider')
-      try {
-        return await analyzeWithClaude(packages, aiConfig)
-      } catch (error) {
-        logger.warn(`Anthropic failed: ${(error as Error).message}`)
-        const fallbackResult = await tryFallback('anthropic', error as Error)
-        if (fallbackResult) return fallbackResult
-        throw error
-      }
-    } else if (provider === 'openai' || (provider === 'auto' && hasOpenAI)) {
-      logger.debug('Using OpenAI as primary provider')
-      try {
-        return await analyzeWithOpenAI(packages, aiConfig)
-      } catch (error) {
-        logger.warn(`OpenAI failed: ${(error as Error).message}`)
-        const fallbackResult = await tryFallback('openai', error as Error)
-        if (fallbackResult) return fallbackResult
-        throw error
-      }
-    } else if (provider === 'gemini' || (provider === 'auto' && hasGemini)) {
-      logger.debug('Using Google Gemini as primary provider')
-      try {
-        return await analyzeWithGemini(packages, aiConfig)
-      } catch (error) {
-        logger.warn(`Gemini failed: ${(error as Error).message}`)
-        const fallbackResult = await tryFallback('gemini', error as Error)
-        if (fallbackResult) return fallbackResult
-        throw error
-      }
-    } else {
-      throw new Error('No valid AI provider configuration found')
+  // Try providers based on config
+  if (provider === 'anthropic' || (provider === 'auto' && hasAnthropic)) {
+    logger.debug('Using Anthropic Claude as primary provider')
+    try {
+      return await analyzeWithClaude(packages, aiConfig)
+    } catch (error) {
+      logger.warn(`Anthropic failed: ${(error as Error).message}`)
+      const fallbackResult = await tryFallback('anthropic', error as Error)
+      if (fallbackResult) return fallbackResult
+      throw error
     }
-  } catch (error) {
-    throw error
+  } else if (provider === 'openai' || (provider === 'auto' && hasOpenAI)) {
+    logger.debug('Using OpenAI as primary provider')
+    try {
+      return await analyzeWithOpenAI(packages, aiConfig)
+    } catch (error) {
+      logger.warn(`OpenAI failed: ${(error as Error).message}`)
+      const fallbackResult = await tryFallback('openai', error as Error)
+      if (fallbackResult) return fallbackResult
+      throw error
+    }
+  } else if (provider === 'gemini' || (provider === 'auto' && hasGemini)) {
+    logger.debug('Using Google Gemini as primary provider')
+    try {
+      return await analyzeWithGemini(packages, aiConfig)
+    } catch (error) {
+      logger.warn(`Gemini failed: ${(error as Error).message}`)
+      const fallbackResult = await tryFallback('gemini', error as Error)
+      if (fallbackResult) return fallbackResult
+      throw error
+    }
+  } else {
+    throw new Error('No valid AI provider configuration found')
   }
 }

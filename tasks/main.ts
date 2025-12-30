@@ -368,7 +368,7 @@ export async function main(options: FinalOptions): Promise<void> {
   try {
     await tasks.run()
     logger.success('Workflow completed successfully!')
-  } catch (err) {
-    logger.error(`Workflow failed: ${(err as Error).message}`)
+  } catch (error) {
+    logger.error(`Workflow failed: ${(error as Error).message}`)
   }
 }

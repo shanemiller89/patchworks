@@ -91,17 +91,17 @@ export function displayPreUpdateReports(
       'New Features',
     ];
 
-    const data: TableCell[][] = preUpdateReports.map((pkg) => [
-      { value: pkg.packageName },
-      { value: pkg.metadata.current },
-      { value: pkg.metadata.latest },
-      { value: pkg.metadata.updateType, type: 'semantic' },
+    const data: TableCell[][] = preUpdateReports.map((packageData) => [
+      { value: packageData.packageName },
+      { value: packageData.metadata.current },
+      { value: packageData.metadata.latest },
+      { value: packageData.metadata.updateType, type: 'semantic' },
       {
-        value: _.isEmpty(pkg.metadata.breakingChanges),
+        value: _.isEmpty(packageData.metadata.breakingChanges),
         type: 'boolean',
       },
       {
-        value: _.isEmpty(pkg.metadata.newFeatures),
+        value: _.isEmpty(packageData.metadata.newFeatures),
         type: 'boolean',
       },
     ]);
@@ -139,33 +139,33 @@ export function displayIncludedPackages(
       'Homepage',
     ];
 
-    const data: TableCell[][] = includedPackages.map((pkg) => [
-      { value: pkg.packageName },
-      { value: pkg.metadata.current },
-      { value: pkg.metadata.wanted },
-      { value: pkg.metadata.latest },
-      { value: pkg.metadata.updateType, type: 'semantic' },
-      { value: pkg.metadata.updatingDifficulty },
-      { value: pkg.metadata.githubUrl },
+    const data: TableCell[][] = includedPackages.map((packageData) => [
+      { value: packageData.packageName },
+      { value: packageData.metadata.current },
+      { value: packageData.metadata.wanted },
+      { value: packageData.metadata.latest },
+      { value: packageData.metadata.updateType, type: 'semantic' },
+      { value: packageData.metadata.updatingDifficulty },
+      { value: packageData.metadata.githubUrl },
       {
         value: ![false, 'UNKNOWN', 'SKIPPED'].includes(
-          pkg.metadata.releaseNotesCompatible as any
+          packageData.metadata.releaseNotesCompatible as any
         ),
         type: 'boolean',
       },
       {
         value: ![false, 'UNKNOWN', 'SKIPPED'].includes(
-          pkg.metadata.fallbackACompatible as any
+          packageData.metadata.fallbackACompatible as any
         ),
         type: 'boolean',
       },
       {
         value: ![false, 'UNKNOWN', 'SKIPPED'].includes(
-          pkg.metadata.fallbackBCompatible as any
+          packageData.metadata.fallbackBCompatible as any
         ),
         type: 'boolean',
       },
-      { value: pkg.metadata.homepage },
+      { value: packageData.metadata.homepage },
     ]);
 
     const tableGenerator = new TableGenerator(headers, data, {
@@ -198,15 +198,15 @@ export function displayExcludedPackages(
       'Validation Status',
     ];
 
-    const data: TableCell[][] = excludedPackages.map((pkg) => [
-      { value: pkg.packageName || pkg.metadata.name },
-      { value: pkg.reason },
-      { value: pkg.metadata.current },
-      { value: pkg.metadata.wanted },
-      { value: pkg.metadata.latest },
-      { value: pkg.metadata.updateType, type: 'semantic' },
-      { value: pkg.metadata.updatingDifficulty },
-      { value: pkg.metadata.validationStatus },
+    const data: TableCell[][] = excludedPackages.map((packageData) => [
+      { value: packageData.packageName || packageData.metadata.name },
+      { value: packageData.reason },
+      { value: packageData.metadata.current },
+      { value: packageData.metadata.wanted },
+      { value: packageData.metadata.latest },
+      { value: packageData.metadata.updateType, type: 'semantic' },
+      { value: packageData.metadata.updatingDifficulty },
+      { value: packageData.metadata.validationStatus },
     ]);
 
     const tableGenerator = new TableGenerator(headers, data, {
@@ -249,35 +249,35 @@ export function displayResultsTable(
       'T FB',
     ];
 
-    const data: TableCell[][] = packages.map((pkg) => [
-      { value: pkg.packageName },
-      { value: `${pkg.metadata.current} -> ${pkg.metadata.latest}` },
-      { value: pkg.metadata.githubUrl },
-      { value: pkg.metadata.fallbackUrl },
+    const data: TableCell[][] = packages.map((packageData) => [
+      { value: packageData.packageName },
+      { value: `${packageData.metadata.current} -> ${packageData.metadata.latest}` },
+      { value: packageData.metadata.githubUrl },
+      { value: packageData.metadata.fallbackUrl },
       {
         value: ![false, UNKNOWN, SKIPPED].includes(
-          pkg.metadata.releaseNotesCompatible as any
+          packageData.metadata.releaseNotesCompatible as any
         ),
         type: 'boolean',
       },
       {
         value: ![false, UNKNOWN, SKIPPED].includes(
-          pkg.metadata.fallbackACompatible as any
+          packageData.metadata.fallbackACompatible as any
         ),
         type: 'boolean',
       },
       {
         value: ![false, UNKNOWN, SKIPPED].includes(
-          pkg.metadata.fallbackBCompatible as any
+          packageData.metadata.fallbackBCompatible as any
         ),
         type: 'boolean',
       },
-      { value: pkg.changelog },
-      { value: pkg.releaseNotes?.[0]?.notes || null },
-      { value: pkg.source },
-      { value: pkg.attemptedReleaseNotes, type: 'boolean' },
-      { value: pkg.attemptedFallbackA, type: 'boolean' },
-      { value: pkg.attemptedFallbackB, type: 'boolean' },
+      { value: packageData.changelog },
+      { value: packageData.releaseNotes?.[0]?.notes || null },
+      { value: packageData.source },
+      { value: packageData.attemptedReleaseNotes, type: 'boolean' },
+      { value: packageData.attemptedFallbackA, type: 'boolean' },
+      { value: packageData.attemptedFallbackB, type: 'boolean' },
     ]);
 
     const tableGenerator = new TableGenerator(headers, data, {
@@ -369,11 +369,11 @@ export function displayFinalReports(
   return new Promise((resolve) => {
     const headers = ['Package', 'Current', 'Latest', 'Update Type'];
 
-    const data: TableCell[][] = selectedPackages.map((pkg) => [
-      { value: pkg.packageName },
-      { value: pkg.metadata.current },
-      { value: pkg.metadata.latest },
-      { value: pkg.metadata.updateType, type: 'semantic' },
+    const data: TableCell[][] = selectedPackages.map((packageData) => [
+      { value: packageData.packageName },
+      { value: packageData.metadata.current },
+      { value: packageData.metadata.latest },
+      { value: packageData.metadata.updateType, type: 'semantic' },
     ]);
 
     const tableGenerator = new TableGenerator(headers, data, {

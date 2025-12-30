@@ -260,7 +260,7 @@ const releaseNotePlugin: CompromisePlugin = {
   api: (View: any) => {
     // Enhanced category detection with context awareness
     View.prototype.detectCategory = function (this: any): string | null {
-      const doc = this;
+      const nlpDocument = this;
       const scores: Record<string, number> = {};
 
       // Score each category based on multiple factors
@@ -269,7 +269,7 @@ const releaseNotePlugin: CompromisePlugin = {
 
         // Check for direct category tags
         if (
-          doc.has(`#${category.charAt(0).toUpperCase() + category.slice(1)}`)
+          nlpDocument.has(`#${category.charAt(0).toUpperCase() + category.slice(1)}`)
         ) {
           scores[category] += 10;
         }
@@ -281,14 +281,14 @@ const releaseNotePlugin: CompromisePlugin = {
           [FIXES]: '#FixVerb',
         };
 
-        if (verbMap[category] && doc.has(verbMap[category])) {
+        if (verbMap[category] && nlpDocument.has(verbMap[category])) {
           scores[category] += 8;
         }
 
         // Context-based scoring
         const contextPatterns = getContextPatterns()[category] || [];
         contextPatterns.forEach((pattern: string) => {
-          if (doc.match(pattern).found) {
+          if (nlpDocument.match(pattern).found) {
             scores[category] += 5;
           }
         });
@@ -296,7 +296,7 @@ const releaseNotePlugin: CompromisePlugin = {
 
       // Return category with highest score
       const bestCategory = Object.entries(scores)
-        .sort(([, a], [, b]) => (b as number) - (a as number))
+        .sort(([, scoreA], [, scoreB]) => (scoreB as number) - (scoreA as number))
         .filter(([, score]) => (score as number) > 0)
         .map(([category]) => category)[0];
 
@@ -305,10 +305,10 @@ const releaseNotePlugin: CompromisePlugin = {
 
     // Improved fuzzy matching with context
     View.prototype.hasBreakingChange = function (this: any): boolean {
-      const doc = this;
+      const nlpDocument = this;
 
       // Direct indicators
-      if (doc.has('#BreakingChange') || doc.has('#BreakingVerb')) {
+      if (nlpDocument.has('#BreakingChange') || nlpDocument.has('#BreakingVerb')) {
         return true;
       }
 
@@ -328,7 +328,7 @@ const releaseNotePlugin: CompromisePlugin = {
         'replace* with',
       ];
 
-      return breakingPatterns.some((pattern) => doc.match(pattern).found);
+      return breakingPatterns.some((pattern) => nlpDocument.match(pattern).found);
     };
   },
 };
@@ -563,11 +563,11 @@ export function analyzeLogCategorization(
  * @returns Category and confidence score
  */
 function categorizeSentence(sentence: string, section: string): CategorizationResult {
-  const doc = nlp(sentence);
-  const sectionDoc = nlp(section);
+  const sentenceDocument = nlp(sentence);
+  const sectionDocument = nlp(section);
 
   // Normalize text for better matching
-  const normalizedSentence = doc
+  const normalizedSentence = sentenceDocument
     .normalize({
       whitespace: true,
       case: true,
@@ -585,14 +585,14 @@ function categorizeSentence(sentence: string, section: string): CategorizationRe
   };
 
   // Pass 1: Direct tag-based detection
-  const tagCategory = (doc as any).detectCategory();
+  const tagCategory = (sentenceDocument as any).detectCategory();
   if (tagCategory) {
     bestMatch = { category: tagCategory, confidence: 0.8 };
   }
 
   // Pass 1.5: Check section context for strong indicators
-  // Use sectionDoc to analyze the section header
-  const sectionCategory = (sectionDoc as any).detectCategory();
+  // Use sectionDocument to analyze the section header
+  const sectionCategory = (sectionDocument as any).detectCategory();
   if (sectionCategory && !tagCategory) {
     // If section strongly indicates a category but sentence doesn't
     bestMatch = { category: sectionCategory, confidence: 0.4 };
@@ -605,7 +605,7 @@ function categorizeSentence(sentence: string, section: string): CategorizationRe
   Object.entries(categoryPatterns).forEach(([category, patterns]) => {
     // Test section header against high-confidence patterns
     if (patterns.high) {
-      const sectionNormalized = sectionDoc.normalize().text();
+      const sectionNormalized = sectionDocument.normalize().text();
       patterns.high.forEach((pattern) => {
         if (pattern.test(sectionNormalized)) {
           // Section header strongly indicates this category
@@ -650,10 +650,10 @@ function categorizeSentence(sentence: string, section: string): CategorizationRe
       });
     }
 
-    // Section context bonus using both the section text and sectionDoc analysis
+    // Section context bonus using both the section text and sectionDocument analysis
     if (
       sectionMatchesCategory(section, category) ||
-      sectionDoc.has(`#${category.charAt(0).toUpperCase() + category.slice(1)}`)
+      sectionDocument.has(`#${category.charAt(0).toUpperCase() + category.slice(1)}`)
     ) {
       categoryScore += 3;
     }
@@ -667,7 +667,7 @@ function categorizeSentence(sentence: string, section: string): CategorizationRe
   });
 
   // Pass 3: Specialized detection for breaking changes
-  if ((doc as any).hasBreakingChange() && bestMatch.confidence < 0.9) {
+  if ((sentenceDocument as any).hasBreakingChange() && bestMatch.confidence < 0.9) {
     bestMatch = { category: BREAKING_CHANGES, confidence: 0.9 };
   }
 

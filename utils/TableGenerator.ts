@@ -58,7 +58,7 @@ export class TableGenerator {
    * @returns The generated table.
    */
   generateTable(): string {
-    const headerRow = this.headers.map((h) => styles.columnHeader(h))
+    const headerRow = this.headers.map((header) => styles.columnHeader(header))
     const rows = this.data.map((row) =>
       row.map((cell) =>
         this.getValue(cell.value, { type: cell.type || 'string' }),

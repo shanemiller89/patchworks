@@ -1,15 +1,15 @@
-import { resolveInstallFlag } from '../cli/installOption.js'
+import { resolveBooleanOption } from '../cli/booleanOption.js'
 import type { FinalOptions } from '../cli/index.js'
 import { shouldInstallDependencies } from '../../tasks/installGuard.ts'
 
 describe('Install flag resolution', () => {
   test('falls back to config value when CLI flag omitted', () => {
-    const result = resolveInstallFlag(undefined, false)
+    const result = resolveBooleanOption(undefined, false, true)
     expect(result).toBe(false)
   })
 
   test('defaults to true when neither CLI nor config provides a value', () => {
-    const result = resolveInstallFlag(undefined, undefined)
+    const result = resolveBooleanOption(undefined, undefined, true)
     expect(result).toBe(true)
   })
 })
@@ -30,7 +30,7 @@ describe('Install task execution guard', () => {
   test('skips dependency installation when resolved value is false', () => {
     const options: FinalOptions = {
       ...baseOptions,
-      install: resolveInstallFlag(undefined, false),
+      install: resolveBooleanOption(undefined, false, true),
     }
 
     expect(shouldInstallDependencies(options)).toBe(false)
@@ -39,7 +39,7 @@ describe('Install task execution guard', () => {
   test('runs dependency installation when resolved value is true', () => {
     const options: FinalOptions = {
       ...baseOptions,
-      install: resolveInstallFlag(true, false),
+      install: resolveBooleanOption(true, false, true),
     }
 
     expect(shouldInstallDependencies(options)).toBe(true)

@@ -4,6 +4,7 @@ import { Octokit } from '@octokit/rest';
 import * as conventionalCommitsParser from 'conventional-commits-parser';
 import semver from 'semver';
 import logger from '../reports/logger.js';
+import { parseGitHubUrl } from '../utils/githubHelpers.js';
 
 interface PackageMetadata {
   current: string;
@@ -62,14 +63,14 @@ export async function fetchCommits({
   const repoUrl = githubUrl || fallbackUrl;
 
   try {
-    // Extract owner and repo from the URL using regex
-    const match = repoUrl?.match(/github\.com\/(.*?)\/(.*?)(\.git|$)/);
-    if (!match) {
+    // Extract owner and repo from the URL
+    const parsed = parseGitHubUrl(repoUrl);
+    if (!parsed) {
       logger.warn(`Invalid GitHub URL for ${packageName}: ${repoUrl}`);
       return null;
     }
 
-    const [, owner, repo] = match;
+    const { owner, repo } = parsed;
     logger.info(`Fetching commits for ${owner}/${repo}`);
 
     const octokit = new Octokit();

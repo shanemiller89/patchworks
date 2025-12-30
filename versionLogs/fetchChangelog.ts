@@ -4,6 +4,7 @@ import axios from 'axios';
 import tar from 'tar-stream';
 import logger from '../reports/logger.js';
 import { gunzipSync } from 'zlib';
+import { CHANGELOG_FILE_PATHS } from '../utils/constants.js';
 
 interface PackageMetadata {
   dist: {
@@ -37,25 +38,8 @@ export async function fetchChangelog({
   );
 
   try {
-    const possiblePaths = [
-      'CHANGELOG.md',
-      'HISTORY.md',
-      'docs/CHANGELOG.md',
-      'docs/HISTORY.md',
-      'changelog.md',
-      'history.md',
-      'CHANGELOG.txt',
-      'HISTORY.txt',
-      'changelog.txt',
-      'history.txt',
-      'changelog/index.md',
-      'history/index.md',
-      'ReleaseNotes.md',
-      'CHANGES.md',
-    ];
-
     // Attempt to fetch changelog from Unpkg
-    for (const path of possiblePaths) {
+    for (const path of CHANGELOG_FILE_PATHS) {
       const unpkgUrl = `https://unpkg.com/${packageName}@${version}/${path}`;
       logger.debug(`Attempting to fetch changelog from Unpkg: ${unpkgUrl}`);
 
@@ -132,29 +116,13 @@ async function extractChangelogFromTarball(
   try {
     const extract = tar.extract();
     const gunzippedBuffer = gunzipSync(tarballBuffer);
-    const changelogFiles = [
-      'CHANGELOG.md',
-      'HISTORY.md',
-      'docs/CHANGELOG.md',
-      'docs/HISTORY.md',
-      'changelog.md',
-      'history.md',
-      'CHANGELOG.txt',
-      'HISTORY.txt',
-      'changelog.txt',
-      'history.txt',
-      'changelog/index.md',
-      'history/index.md',
-      'ReleaseNotes.md',
-      'CHANGES.md',
-    ];
 
     return new Promise<string | null>((resolve, reject) => {
       let changelogContent: string | null = null;
 
       extract.on('entry', (header, stream, next) => {
         logger.debug(`Processing tarball entry: ${header.name}`);
-        if (changelogFiles.includes(header.name)) {
+        if (CHANGELOG_FILE_PATHS.includes(header.name)) {
           const chunks: Buffer[] = [];
           stream.on('data', (chunk) => chunks.push(chunk));
           stream.on('end', () => {

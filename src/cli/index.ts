@@ -8,7 +8,7 @@ import { createOutputErrorHandler } from './errorHandler.js'
 import { renderMainMenu } from '../../menus/mainMenu.js'
 import { readConfig, PatchworksConfig } from '../../config/configUtil.js'
 import { main } from '../../tasks/main.js'
-import { resolveBooleanOption } from './booleanOption.js'
+import { buildFinalOptions } from './optionsBuilder.js'
 
 // Type definitions
 export type Level = 'patch' | 'minor' | 'major'
@@ -140,31 +140,7 @@ export default function (): void {
     .action(async (level: Level | undefined, options: CLIOptions) => {
       const config: PatchworksConfig | null = (await readConfig()) || null
 
-      const finalOptions: FinalOptions = {
-        level: level ?? config?.level ?? null,
-        limit: options.limit ?? config?.limit ?? null,
-        levelScope: options.levelScope ?? config?.levelScope ?? 'strict',
-        summary: resolveBooleanOption(options.summary, config?.summary, false),
-        skipped: resolveBooleanOption(options.skipped, config?.skipped, false),
-        write: resolveBooleanOption(options.write, config?.write, false),
-        install: resolveBooleanOption(options.install, config?.install, true),
-        excludeRepoless: resolveBooleanOption(
-          options.excludeRepoless,
-          config?.excludeRepoless,
-          false,
-        ),
-        debug: resolveBooleanOption(options.debug, config?.debug, false),
-        showExcluded: resolveBooleanOption(
-          options.showExcluded,
-          config?.showExcluded,
-          false,
-        ),
-        aiSummary: resolveBooleanOption(
-          options.aiSummary,
-          config?.ai?.enabled,
-          false,
-        ),
-      }
+      const finalOptions: FinalOptions = buildFinalOptions(level, options, config || {})
 
       if (finalOptions.debug) {
         process.env.DEBUG = 'true' // Set DEBUG for the logger
@@ -190,38 +166,19 @@ export default function (): void {
     .action(async (level: Level, options: CLIOptions) => {
       const config: PatchworksConfig | null = (await readConfig()) || null
 
-      const finalOptions: FinalOptions = {
-        level: level ?? config?.level ?? 'minor',
-        limit: options.limit ?? config?.limit ?? null,
-        levelScope: options.levelScope ?? config?.levelScope ?? 'strict',
-        summary: resolveBooleanOption(options.summary, config?.summary, false),
-        skipped: resolveBooleanOption(options.skipped, config?.skipped, false),
-        write: resolveBooleanOption(options.write, config?.write, false),
-        install: resolveBooleanOption(options.install, config?.install, false),
-        excludeRepoless: resolveBooleanOption(
-          options.excludeRepoless,
-          config?.excludeRepoless,
-          false,
-        ),
-        debug: resolveBooleanOption(options.debug, config?.debug, false),
-        showExcluded: resolveBooleanOption(
-          options.showExcluded,
-          config?.showExcluded,
-          false,
-        ),
-        aiSummary: resolveBooleanOption(
-          options.aiSummary,
-          config?.ai?.enabled,
-          false,
-        ),
-      }
+      const finalOptions: FinalOptions = buildFinalOptions(
+        level,
+        options,
+        config || {},
+        { reportsOnly: true, install: false }
+      )
 
       if (finalOptions.debug) {
         process.env.DEBUG = 'true' // Set DEBUG for the logger
         logger.warn(`ಥ﹏ಥ -- RUNNING IN DEBUG MODE -- (╥﹏╥)`)
       }
 
-      await main({ reportsOnly: true, ...finalOptions }).then(() => {
+      await main(finalOptions).then(() => {
         process.exit(0)
       })
     })
@@ -243,31 +200,7 @@ export default function (): void {
     .action(async (level: Level, options: CLIOptions) => {
       const config: PatchworksConfig | null = (await readConfig()) || null
 
-      const finalOptions: FinalOptions = {
-        level: level ?? config?.level ?? 'minor',
-        limit: options.limit ?? config?.limit ?? null,
-        levelScope: options.levelScope ?? config?.levelScope ?? 'strict',
-        summary: resolveBooleanOption(options.summary, config?.summary, false),
-        skipped: resolveBooleanOption(options.skipped, config?.skipped, false),
-        write: resolveBooleanOption(options.write, config?.write, false),
-        install: resolveBooleanOption(options.install, config?.install, true),
-        excludeRepoless: resolveBooleanOption(
-          options.excludeRepoless,
-          config?.excludeRepoless,
-          false,
-        ),
-        debug: resolveBooleanOption(options.debug, config?.debug, false),
-        showExcluded: resolveBooleanOption(
-          options.showExcluded,
-          config?.showExcluded,
-          false,
-        ),
-        aiSummary: resolveBooleanOption(
-          options.aiSummary,
-          config?.ai?.enabled,
-          false,
-        ),
-      }
+      const finalOptions: FinalOptions = buildFinalOptions(level, options, config || {})
 
       if (finalOptions.debug) {
         process.env.DEBUG = 'true' // Set DEBUG for the logger

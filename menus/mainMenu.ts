@@ -351,6 +351,7 @@ ${chalk.blue(DOUBLE_LINE)}
           
           process.exit(0)
         }
+        // eslint-disable-next-line no-fallthrough
         case 5:
           console.log('Displaying Help and Documentation...')
           rl.pause()

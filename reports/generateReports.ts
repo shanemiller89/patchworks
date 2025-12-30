@@ -7,35 +7,16 @@ import tar from 'tar-stream';
 import path from 'path';
 import type { PackageWithLogs, AICriticalFindings } from '../types/index.js';
 
-interface Author {
+// Interfaces for potential future use
+interface _Author {
   name?: string;
   email?: string;
   [key: string]: any;
 }
 
-interface Repository {
+interface _Repository {
   url: string;
   [key: string]: any;
-}
-
-interface PackageMetadata {
-  current: string;
-  wanted?: string;
-  latest: string;
-  updateType: string;
-  author?: Author;
-  description?: string;
-  repository: Repository;
-  homepage?: string;
-  [key: string]: any;
-}
-
-interface CategorizedNote {
-  version: string;
-  published_at?: string;
-  categorized: {
-    [category: string]: string[];
-  };
 }
 
 interface ReleaseNote {

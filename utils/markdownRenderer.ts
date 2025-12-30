@@ -112,7 +112,6 @@ export function renderMarkdown(markdown: string, maxWidth: number = 100): string
   const lines = processed.split('\n');
   const output: string[] = [];
   let inList = false;
-  let listIndent = 0;
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];

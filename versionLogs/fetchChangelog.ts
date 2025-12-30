@@ -171,11 +171,8 @@ async function extractChangelogFromTarball(
 
         logger.debug(`Processing tarball entry: ${header.name}`);
         
-        // Check if the entry or its base name matches a changelog file
-        const fileName = header.name.split('/').pop() || '';
-        const isChangelogFile = changelogFileSet.has(header.name) || changelogFileSet.has(fileName);
-        
-        if (isChangelogFile) {
+        // Check if the full path matches first
+        if (changelogFileSet.has(header.name)) {
           const chunks: Buffer[] = [];
           stream.on('data', (chunk) => chunks.push(chunk));
           stream.on('end', () => {
@@ -184,7 +181,19 @@ async function extractChangelogFromTarball(
             resolve(changelogContent);
           });
         } else {
-          stream.resume();
+          // Only extract basename if full path doesn't match
+          const fileName = header.name.split('/').pop() || '';
+          if (changelogFileSet.has(fileName)) {
+            const chunks: Buffer[] = [];
+            stream.on('data', (chunk) => chunks.push(chunk));
+            stream.on('end', () => {
+              changelogContent = Buffer.concat(chunks).toString('utf-8');
+              resolved = true;
+              resolve(changelogContent);
+            });
+          } else {
+            stream.resume();
+          }
         }
         next();
       });

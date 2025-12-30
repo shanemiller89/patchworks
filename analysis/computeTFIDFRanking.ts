@@ -45,6 +45,9 @@ interface TFIDFRanking {
 
 type ParsedSections = Record<string, any>;
 
+// Configuration constants
+const DEBUG_LOG_MAX_LENGTH = 200;
+
 /**
  * Preprocess document text (e.g., normalize, remove unnecessary characters).
  * @param text - Raw document text.
@@ -104,7 +107,7 @@ export function computeTFIDFRankings(
   
   const combinedDocument = textParts.join(' ');
 
-  logger.debug(`Combined document: ${combinedDocument.slice(0, 200)}...`);
+  logger.debug(`Combined document: ${combinedDocument.slice(0, DEBUG_LOG_MAX_LENGTH)}...`);
 
   // Early return if document is empty
   if (!combinedDocument.trim()) {

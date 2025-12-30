@@ -199,11 +199,11 @@ function parseHTML(htmlContent: string): Record<string, any[]> {
             .get();
         } else {
           const text = $(elem).text().trim();
-          return text || undefined; // Filter out empty strings
+          return text; // Will be filtered out if empty by the filter below
         }
       })
       .get()
-      .filter(item => item !== undefined); // Remove undefined items
+      .filter(item => item && item !== ''); // Remove empty and undefined items
 
     // Fallback: Add heading with raw content if no items are found
     if (items.length === 0) {

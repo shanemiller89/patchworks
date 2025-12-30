@@ -14,6 +14,17 @@ const PERFORMANCE = 'performance' as const;
 const REFACTORS = 'refactor' as const;
 const CHORES = 'chore' as const;
 
+type Category =
+  | typeof BREAKING_CHANGES
+  | typeof FEATURES
+  | typeof FIXES
+  | typeof DEPRECATIONS
+  | typeof SECURITY
+  | typeof DOCUMENTATION
+  | typeof PERFORMANCE
+  | typeof REFACTORS
+  | typeof CHORES;
+
 interface TagDefinition {
   isA: string | string[];
 }
@@ -248,7 +259,7 @@ const releaseNotePlugin: CompromisePlugin = {
   // Custom matching methods
   api: (View: any) => {
     // Enhanced category detection with context awareness
-    View.prototype.detectCategory = function (this: any): string | null {
+    View.prototype.detectCategory = function (this: any): Category | null {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const doc = this;
       const scores: Record<string, number> = {};
@@ -290,7 +301,7 @@ const releaseNotePlugin: CompromisePlugin = {
         .filter(([, score]) => (score as number) > 0)
         .map(([category]) => category)[0];
 
-      return bestCategory || null;
+      return (bestCategory as Category) || null;
     };
 
     // Improved fuzzy matching with context
@@ -643,7 +654,7 @@ function categorizeSentence(sentence: string, section: string): CategorizationRe
 
     // Section context bonus using both the section text and sectionDoc analysis
     if (
-      sectionMatchesCategory(section, category) ||
+      sectionMatchesCategory(section, category as Category) ||
       sectionDoc.has(`#${category.charAt(0).toUpperCase() + category.slice(1)}`)
     ) {
       categoryScore += 3;
@@ -682,9 +693,9 @@ function categorizeSentence(sentence: string, section: string): CategorizationRe
  * @param category - Category to check
  * @returns Whether section matches category
  */
-function sectionMatchesCategory(section: string, category: string): boolean {
+function sectionMatchesCategory(section: string, category: Category): boolean {
   const sectionLower = section.toLowerCase();
-  const categoryMappings: Record<string, string[]> = {
+  const categoryMappings: Record<Category, string[]> = {
     [BREAKING_CHANGES]: ['breaking', 'incompatible', 'migration'],
     [FEATURES]: ['feature', 'new', 'added', 'enhancement'],
     [FIXES]: ['fix', 'bug', 'patch', 'resolved'],

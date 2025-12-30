@@ -60,14 +60,19 @@ export async function fetchChangelog({
       logger.debug(`Attempting to fetch changelog from Unpkg: ${unpkgUrl}`);
 
       try {
-        const unpkgResponse = await axios.get(unpkgUrl);
+        const unpkgResponse = await axios.get(unpkgUrl, {
+          timeout: 10000,
+        });
         if (unpkgResponse.status === 200) {
           const changelogContent = unpkgResponse.data;
           logger.success(`Changelog successfully fetched from Unpkg: ${unpkgUrl}`);
           return changelogContent;
         }
       } catch (unpkgError: any) {
-        logger.warn(`Error fetching from Unpkg: ${unpkgError.message}`);
+        // Only log if it's not a 404 (which is expected for most paths)
+        if (unpkgError.response?.status !== 404) {
+          logger.warn(`Error fetching from Unpkg: ${unpkgError.message}`);
+        }
       }
     }
 
@@ -132,7 +137,9 @@ async function extractChangelogFromTarball(
   try {
     const extract = tar.extract();
     const gunzippedBuffer = gunzipSync(tarballBuffer);
-    const changelogFiles = [
+    
+    // Create a Set for faster lookups
+    const changelogFileSet = new Set([
       'CHANGELOG.md',
       'HISTORY.md',
       'docs/CHANGELOG.md',
@@ -147,32 +154,59 @@ async function extractChangelogFromTarball(
       'history/index.md',
       'ReleaseNotes.md',
       'CHANGES.md',
-    ];
+    ]);
 
     return new Promise<string | null>((resolve, reject) => {
       let changelogContent: string | null = null;
+      let resolved = false;
 
       extract.on('entry', (header, stream, next) => {
+        // Skip processing if we already found a changelog
+        if (resolved) {
+          stream.resume();
+          next();
+          return;
+        }
+
         logger.debug(`Processing tarball entry: ${header.name}`);
-        if (changelogFiles.includes(header.name)) {
+        
+        // Check if the full path matches first
+        if (changelogFileSet.has(header.name)) {
           const chunks: Buffer[] = [];
           stream.on('data', (chunk) => chunks.push(chunk));
           stream.on('end', () => {
             changelogContent = Buffer.concat(chunks).toString('utf-8');
+            resolved = true;
             resolve(changelogContent);
           });
         } else {
-          stream.resume();
+          // Only extract basename if full path doesn't match
+          const fileName = header.name.split('/').pop() || '';
+          if (changelogFileSet.has(fileName)) {
+            const chunks: Buffer[] = [];
+            stream.on('data', (chunk) => chunks.push(chunk));
+            stream.on('end', () => {
+              changelogContent = Buffer.concat(chunks).toString('utf-8');
+              resolved = true;
+              resolve(changelogContent);
+            });
+          } else {
+            stream.resume();
+          }
         }
         next();
       });
 
       extract.on('finish', () => {
-        resolve(changelogContent || null);
+        if (!resolved) {
+          resolve(changelogContent || null);
+        }
       });
 
       extract.on('error', (err) => {
-        reject(`Extraction error: ${err.message}`);
+        if (!resolved) {
+          reject(`Extraction error: ${err.message}`);
+        }
       });
 
       extract.end(gunzippedBuffer);

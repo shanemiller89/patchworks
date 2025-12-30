@@ -64,33 +64,41 @@ export async function fetchReleaseNotes({
           if (releases.length === 0) {
             logger.warn(`No releases found for GitHub repository: ${owner}/${repo}`);
           } else {
-            for (const release of releases) {
-              try {
-                const releaseVersion = release.tag_name.replace(/^v/, ''); // Strip 'v' prefix if present
-                logger.debug(`Processing release: ${releaseVersion}`);
+            // Process releases in parallel with error handling for each
+            const processedReleases = await Promise.all(
+              releases.map(async (release) => {
+                try {
+                  const releaseVersion = release.tag_name.replace(/^v/, ''); // Strip 'v' prefix if present
+                  logger.debug(`Processing release: ${releaseVersion}`);
 
-                if (
-                  semver.valid(releaseVersion) &&
-                  semver.gt(releaseVersion, current) &&
-                  semver.lte(releaseVersion, latest)
-                ) {
-                  logger.debug(`Including release: ${releaseVersion}`);
-                  releaseNotes.push({
-                    version: releaseVersion,
-                    published_at: release.published_at || null,
-                    notes: release.body || 'No release notes available.',
-                  });
-                } else {
-                  logger.debug(
-                    `Skipping release: ${releaseVersion} (not in range: current ${current} to latest ${latest})`
+                  if (
+                    semver.valid(releaseVersion) &&
+                    semver.gt(releaseVersion, current) &&
+                    semver.lte(releaseVersion, latest)
+                  ) {
+                    logger.debug(`Including release: ${releaseVersion}`);
+                    return {
+                      version: releaseVersion,
+                      published_at: release.published_at || null,
+                      notes: release.body || 'No release notes available.',
+                    };
+                  } else {
+                    logger.debug(
+                      `Skipping release: ${releaseVersion} (not in range: current ${current} to latest ${latest})`
+                    );
+                    return null;
+                  }
+                } catch (versionError: any) {
+                  logger.error(
+                    `Error processing release version: ${versionError.message}`
                   );
+                  return null;
                 }
-              } catch (versionError: any) {
-                logger.error(
-                  `Error processing release version: ${versionError.message}`
-                );
-              }
-            }
+              })
+            );
+
+            // Filter out null values from skipped/errored releases
+            releaseNotes.push(...processedReleases.filter((note): note is ReleaseNote => note !== null));
 
             logger.success(
               `Fetched ${releaseNotes.length} release notes newer than ${current} up to ${latest} for ${owner}/${repo}`

@@ -133,7 +133,6 @@ async function extractChangelogFromTarball(
         // Skip processing if we already found a changelog
         if (resolved) {
           stream.resume();
-          next();
           return;
         }
 
@@ -147,7 +146,9 @@ async function extractChangelogFromTarball(
             changelogContent = Buffer.concat(chunks).toString('utf-8');
             resolved = true;
             resolve(changelogContent);
+            extract.destroy();
           });
+          next();
         } else {
           // Only extract basename if full path doesn't match
           const fileName = header.name.split('/').pop() || '';
@@ -158,12 +159,14 @@ async function extractChangelogFromTarball(
               changelogContent = Buffer.concat(chunks).toString('utf-8');
               resolved = true;
               resolve(changelogContent);
+              extract.destroy();
             });
+            next();
           } else {
             stream.resume();
+            next();
           }
         }
-        next();
       });
 
       extract.on('finish', () => {

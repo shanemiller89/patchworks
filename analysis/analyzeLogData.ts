@@ -258,72 +258,60 @@ export async function parseIncludedPackage(pkg: PackageData): Promise<ParseResul
       const importantTerms: any[] = [];
       const categorizedNotes: any[] = [];
 
-      // Process notes in parallel for better performance
-      const processedNotes = await Promise.all(
-        notes.map(async (note) => {
-          try {
-            const { htmlContent, metadata } = convertMarkdownToHTML(note.notes);
-            logger.debug(
-              `${packageName} [${note.version}]: Markdown converted to HTML with metadata: ${JSON.stringify(
-                metadata
-              )}`
-            );
+      // Process notes sequentially; operations are CPU-bound and synchronous
+      for (const note of notes) {
+        try {
+          const { htmlContent, metadata } = convertMarkdownToHTML(note.notes);
+          logger.debug(
+            `${packageName} [${note.version}]: Markdown converted to HTML with metadata: ${JSON.stringify(
+              metadata
+            )}`
+          );
 
-            const parsedSections = parseHTML(htmlContent);
-            logger.debug(
-              `${packageName} [${note.version}]: Parsed HTML sections: ${JSON.stringify(
-                parsedSections,
-                null,
-                2
-              )}`
-            );
+          const parsedSections = parseHTML(htmlContent);
+          logger.debug(
+            `${packageName} [${note.version}]: Parsed HTML sections: ${JSON.stringify(
+              parsedSections,
+              null,
+              2
+            )}`
+          );
 
-            const tfidfResults = computeTFIDFRankings(parsedSections);
-            logger.debug(
-              `${packageName} [${note.version}]: Computed TF-IDF rankings: ${JSON.stringify(
-                tfidfResults,
-                null,
-                2
-              )}`
-            );
+          const tfidfResults = computeTFIDFRankings(parsedSections);
+          logger.debug(
+            `${packageName} [${note.version}]: Computed TF-IDF rankings: ${JSON.stringify(
+              tfidfResults,
+              null,
+              2
+            )}`
+          );
 
-            const compromiseResults = analyzeLogCategorization(parsedSections);
-            logger.debug(
-              `${packageName} [${note.version}]: Compromise analysis results: ${JSON.stringify(
-                compromiseResults,
-                null,
-                2
-              )}`
-            );
+          const compromiseResults = analyzeLogCategorization(parsedSections);
+          logger.debug(
+            `${packageName} [${note.version}]: Compromise analysis results: ${JSON.stringify(
+              compromiseResults,
+              null,
+              2
+            )}`
+          );
 
-            return {
-              importantTerm: {
-                version: note.version || UNKNOWN,
-                published_at: note.published_at || UNKNOWN,
-                terms: tfidfResults,
-              },
-              categorizedNote: {
-                version: note.version || UNKNOWN,
-                published_at: note.published_at || UNKNOWN,
-                categorized: compromiseResults,
-                logMetadata: metadata,
-                logSource: logSource,
-              },
-            };
-          } catch (error: any) {
-            logger.error(
-              `${packageName} [${note.version}]: Error processing ${logSource} - ${error.message}`
-            );
-            return null;
-          }
-        })
-      );
+          importantTerms.push({
+            version: note.version || UNKNOWN,
+            published_at: note.published_at || UNKNOWN,
+            terms: tfidfResults,
+          });
 
-      // Filter out failed notes and collect results
-      for (const result of processedNotes) {
-        if (result) {
-          importantTerms.push(result.importantTerm);
-          categorizedNotes.push(result.categorizedNote);
+          categorizedNotes.push({
+            version: note.version || UNKNOWN,
+            published_at: note.published_at || UNKNOWN,
+            categorized: compromiseResults,
+            logMetadata: metadata,
+            logSource: logSource,
+          });
+        } catch (error: any) {
+          logger.error(
+            `${packageName} [${note.version}]: Error processing ${logSource} - ${error.message}`
+          );
         }
       }
 

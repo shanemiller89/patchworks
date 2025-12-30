@@ -198,6 +198,7 @@ export default function (): void {
         summary: resolveBooleanOption(options.summary, config?.summary, false),
         skipped: resolveBooleanOption(options.skipped, config?.skipped, false),
         write: resolveBooleanOption(options.write, config?.write, false),
+        // Reports-only workflow should not install by default
         install: resolveInstallFlag(options.install, config?.install, false),
         excludeRepoless: resolveBooleanOption(
           options.excludeRepoless,

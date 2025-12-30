@@ -62,7 +62,7 @@ export async function fetchChangelog({
 
       try {
         const unpkgResponse = await axios.get(unpkgUrl, {
-          timeout: 10000, // 10 second timeout for each request
+          timeout: 10000,
         });
         if (unpkgResponse.status === 200) {
           const changelogContent = unpkgResponse.data;

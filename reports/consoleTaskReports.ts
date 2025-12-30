@@ -15,6 +15,7 @@ import { SKIPPED, UNKNOWN } from '../utils/constants.js';
 import { TableGenerator, TableCell } from '../utils/TableGenerator.js';
 import { styles } from './styles.js';
 import { renderMarkdownPreview } from '../utils/markdownRenderer.js';
+import logger from './logger.js';
 
 interface PackageMetadata {
   name?: string;
@@ -335,8 +336,9 @@ export function displayAIFindings(findings: any, showPreview: boolean = true): s
     try {
       const preview = renderMarkdownPreview(markdownContent, 40);
       output += preview + '\n\n';
-    } catch {
-      // Fallback if renderer fails
+    } catch (error) {
+      // Fallback if renderer fails - log error for debugging
+      logger.debug(`Markdown rendering failed: ${(error as Error).message}`);
       output += chalk.gray(summary) + '\n\n';
     }
     

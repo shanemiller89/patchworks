@@ -7,16 +7,32 @@ import tar from 'tar-stream';
 import path from 'path';
 import type { PackageWithLogs, AICriticalFindings } from '../types/index.js';
 
-// Interfaces for potential future use
-interface _Author {
+// Local type definitions for destructured properties
+interface Author {
   name?: string;
   email?: string;
-  [key: string]: any;
 }
 
-interface _Repository {
+interface Repository {
   url: string;
-  [key: string]: any;
+}
+
+interface PackageMetadata {
+  current: string;
+  latest: string;
+  updateType: string;
+  author?: Author;
+  description?: string;
+  repository?: Repository;
+  homepage?: string;
+}
+
+interface CategorizedNote {
+  version: string;
+  published_at?: string;
+  categorized: {
+    [category: string]: string[];
+  };
 }
 
 interface ReleaseNote {
@@ -38,7 +54,7 @@ const generatePackageDetails = (pkg: PackageWithLogs): string => {
     description,
     repository,
     homepage
-  } = metadata;
+  }: PackageMetadata = metadata;
   
   const packageDetails = `
 ## ${packageName}
@@ -99,8 +115,8 @@ export function generatePatchworkReport(data: PackageWithLogs): string {
     const header = `# ${packageName} Update Report\n`;
     const packageDetails = generatePackageDetails(data);
 
-    const categorizedNotesSection = categorizedNotes
-      .map((note) => {
+    const categorizedNotesSection = (categorizedNotes as CategorizedNote[])
+      .map((note: CategorizedNote) => {
         const categories = Object.entries(note.categorized)
           .filter(([, items]) => items.length > 0)
           .map(

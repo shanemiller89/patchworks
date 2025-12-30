@@ -49,9 +49,9 @@ interface CategoryPattern {
   low?: RegExp[];
 }
 
-interface CategoryPatterns {
-  [key: string]: CategoryPattern;
-}
+type CategoryPatterns = {
+  [K in Category]?: CategoryPattern;
+};
 
 interface CategorizationResult {
   category: string | null;

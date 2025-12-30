@@ -166,18 +166,19 @@ export default function (): void {
     .action(async (level: Level, options: CLIOptions) => {
       const config: PatchworksConfig | null = (await readConfig()) || null
 
-      const finalOptions: FinalOptions = {
-        reportsOnly: true,
-        ...buildFinalOptions(level, options, config || {}),
-        install: false, // Override install to false for reports-only mode
-      }
+      const finalOptions: FinalOptions = buildFinalOptions(
+        level,
+        options,
+        config || {},
+        { reportsOnly: true, install: false }
+      )
 
       if (finalOptions.debug) {
         process.env.DEBUG = 'true' // Set DEBUG for the logger
         logger.warn(`ಥ﹏ಥ -- RUNNING IN DEBUG MODE -- (╥﹏╥)`)
       }
 
-      await main({ reportsOnly: true, ...finalOptions }).then(() => {
+      await main(finalOptions).then(() => {
         process.exit(0)
       })
     })

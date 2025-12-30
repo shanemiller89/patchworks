@@ -20,12 +20,14 @@ interface CommandOptions {
  * @param level - The version update level
  * @param options - CLI command options
  * @param config - Config file values
+ * @param overrides - Optional overrides for specific options
  * @returns Final options with all values resolved
  */
 export function buildFinalOptions(
   level: 'patch' | 'minor' | 'major' | null | undefined,
   options: CommandOptions,
-  config: Partial<PatchworksConfig>
+  config: Partial<PatchworksConfig>,
+  overrides?: Partial<FinalOptions>
 ): FinalOptions {
   return {
     level: level ?? config.level ?? null,
@@ -51,5 +53,6 @@ export function buildFinalOptions(
       config.ai?.enabled,
       false
     ),
+    ...overrides,
   };
 }

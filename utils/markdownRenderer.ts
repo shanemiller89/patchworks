@@ -112,6 +112,7 @@ export function renderMarkdown(markdown: string, maxWidth: number = 100): string
   const lines = processed.split('\n');
   const output: string[] = [];
   let inList = false;
+  let listIndent = 0; // Track indentation depth for potential future nested list enhancements
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -120,6 +121,7 @@ export function renderMarkdown(markdown: string, maxWidth: number = 100): string
     // Skip empty lines in some contexts
     if (!trimmed && inList) {
       inList = false;
+      listIndent = 0; // Reset indent when exiting list  
       output.push('');
       continue;
     }
@@ -203,7 +205,23 @@ export function renderMarkdown(markdown: string, maxWidth: number = 100): string
     if (trimmed.match(/^[-*+]\s/)) {
       const text = trimmed.replace(/^[-*+]\s/, '');
       const formatted = formatInlineMarkdown(text);
-      output.push('  ' + chalk.cyan('•') + ' ' + formatted);
+      // Calculate indentation based on original line leading spaces
+      const leadingSpaces = line.length - line.trimStart().length;
+      const currentIndent = Math.floor(leadingSpaces / 2);
+      
+      // Validate indentation consistency within nested lists
+      if (inList && currentIndent < listIndent) {
+        // Dedenting to a parent level - acceptable
+        listIndent = currentIndent;
+      } else if (inList && currentIndent > listIndent + 1) {
+        // Skip more than one level - may indicate formatting issue but we'll handle it
+        listIndent = currentIndent;
+      } else {
+        listIndent = currentIndent;
+      }
+      
+      const indent = '  '.repeat(currentIndent);
+      output.push(indent + '  ' + chalk.cyan('•') + ' ' + formatted);
       inList = true;
       continue;
     }
@@ -214,7 +232,23 @@ export function renderMarkdown(markdown: string, maxWidth: number = 100): string
       if (match) {
         const [, num, text] = match;
         const formatted = formatInlineMarkdown(text);
-        output.push('  ' + chalk.cyan(num + '.') + ' ' + formatted);
+        // Calculate indentation based on original line leading spaces
+        const leadingSpaces = line.length - line.trimStart().length;
+        const currentIndent = Math.floor(leadingSpaces / 2);
+        
+        // Validate indentation consistency within nested lists
+        if (inList && currentIndent < listIndent) {
+          // Dedenting to a parent level - acceptable
+          listIndent = currentIndent;
+        } else if (inList && currentIndent > listIndent + 1) {
+          // Skip more than one level - may indicate formatting issue but we'll handle it
+          listIndent = currentIndent;
+        } else {
+          listIndent = currentIndent;
+        }
+        
+        const indent = '  '.repeat(currentIndent);
+        output.push(indent + '  ' + chalk.cyan(num + '.') + ' ' + formatted);
         inList = true;
         continue;
       }

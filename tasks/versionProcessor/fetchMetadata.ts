@@ -232,7 +232,9 @@ export async function processPackagesMetadata(
             ...metadata,
           };
         }
-      } catch {
+      } catch (error) {
+        // Log metadata fetch/parse error for debugging
+        logger.debug(`Failed to fetch metadata for ${pkg}: ${(error as Error).message}`);
         results.invalid[pkg] = {
           validationStatus: 'FAILED VALIDATION',
           ...info,

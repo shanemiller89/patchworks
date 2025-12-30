@@ -774,8 +774,11 @@ export async function generateCriticalFindings(
   const provider = aiConfig.provider || 'auto'
 
   // Helper function to try fallback providers
-  const tryFallback = async (failedProvider: string, _error: Error): Promise<AICriticalFindings | null> => {
+  const tryFallback = async (failedProvider: string, error: Error): Promise<AICriticalFindings | null> => {
     if (provider !== 'auto') return null
+    
+    // Log the original error that triggered fallback
+    logger.debug(`Original ${failedProvider} error: ${error.message}`)
     
     // Try providers in order: Anthropic -> OpenAI -> Gemini
     const fallbackOrder = []

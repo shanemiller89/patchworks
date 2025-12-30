@@ -4,6 +4,7 @@ import { Octokit } from '@octokit/rest';
 import _ from 'lodash';
 import semver from 'semver';
 import logger from '../reports/logger.js';
+import { parseGitHubUrl } from '../utils/githubHelpers.js';
 
 interface ReleaseNote {
   version: string;
@@ -45,11 +46,11 @@ export async function fetchReleaseNotes({
       logger.debug(
         `Attempting to fetch release notes from GitHub for package: ${packageName}`
       );
-      const match = githubUrl.match(/github\.com\/(.*?)\/(.*?)(\.git|$)/);
-      if (!match) {
+      const parsed = parseGitHubUrl(githubUrl);
+      if (!parsed) {
         logger.warn(`Invalid GitHub URL for ${packageName}: ${githubUrl}`);
       } else {
-        const [, owner, repo] = match;
+        const { owner, repo } = parsed;
         logger.info(`Fetching release notes for ${owner}/${repo}`);
 
         try {

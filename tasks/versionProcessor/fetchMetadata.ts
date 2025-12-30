@@ -205,7 +205,30 @@ export function validatePackageMetadata(
 }
 
 /**
+ * Processes items in batches with concurrency control
+ * @param items - Array of items to process
+ * @param processor - Async function to process each item
+ * @param concurrency - Maximum number of concurrent operations
+ */
+async function processBatch<T, R>(
+  items: T[],
+  processor: (item: T) => Promise<R>,
+  concurrency: number = 5
+): Promise<R[]> {
+  const results: R[] = [];
+  
+  for (let i = 0; i < items.length; i += concurrency) {
+    const batch = items.slice(i, i + concurrency);
+    const batchResults = await Promise.all(batch.map(processor));
+    results.push(...batchResults);
+  }
+  
+  return results;
+}
+
+/**
  * Processes a list of packages by fetching and validating their metadata.
+ * Optimized with concurrency control to prevent rate limiting.
  * @param packages - The list of packages to process with version info.
  * @returns An object containing valid and invalid packages.
  */
@@ -217,8 +240,12 @@ export async function processPackagesMetadata(
     invalid: {},
   };
 
-  await Promise.all(
-    Object.entries(packages).map(async ([pkg, info]) => {
+  const packageEntries = Object.entries(packages);
+  
+  // Process packages with concurrency limit to avoid overwhelming the npm registry
+  await processBatch(
+    packageEntries,
+    async ([pkg, info]) => {
       const { latest } = info;
       try {
         const metadata = await fetchPackageMetadata(pkg, latest);
@@ -238,7 +265,8 @@ export async function processPackagesMetadata(
           ...info,
         };
       }
-    })
+    },
+    5 // Process 5 packages at a time
   );
 
   logger.debug(`Processed packages. Results: ${JSON.stringify(results, null, 2)}`);

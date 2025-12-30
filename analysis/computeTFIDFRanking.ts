@@ -85,14 +85,32 @@ export function computeTFIDFRankings(
     `Compute TF-IDF - Parsed sections: ${JSON.stringify(parsedSections, null, 2)}`
   );
 
-  // Combine all sections into a single document
-  const combinedDocument = Object.values(parsedSections)
-    .flat(Infinity) // Flatten nested structures
-    .map((item: any) => (typeof item === 'string' ? item : item.text || '')) // Extract text from objects
-    .map(preprocessDocument) // Preprocess text
-    .join(' ');
+  // Combine all sections into a single document using more efficient approach
+  const textParts: string[] = [];
+  
+  for (const items of Object.values(parsedSections)) {
+    if (Array.isArray(items)) {
+      for (const item of items) {
+        if (typeof item === 'string') {
+          const processed = preprocessDocument(item);
+          if (processed) textParts.push(processed);
+        } else if (item?.text) {
+          const processed = preprocessDocument(item.text);
+          if (processed) textParts.push(processed);
+        }
+      }
+    }
+  }
+  
+  const combinedDocument = textParts.join(' ');
 
-  logger.debug(`Combined document: ${combinedDocument}`);
+  logger.debug(`Combined document: ${combinedDocument.slice(0, 200)}...`);
+
+  // Early return if document is empty
+  if (!combinedDocument.trim()) {
+    logger.warn('Empty combined document, skipping TF-IDF computation.');
+    return [];
+  }
 
   // Initialize the Corpus with a single document
   const corpus = new Corpus(['combined'], [combinedDocument], true, [...stopwords]);

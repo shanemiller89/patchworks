@@ -168,8 +168,16 @@ function parseHTML(htmlContent: string): Record<string, any[]> {
       .get();
   }
 
-  $('h1, h2, h3, h4, h5, h6').each((_, element) => {
+  // Cache the selector for headings to avoid re-querying
+  const headings = $('h1, h2, h3, h4, h5, h6');
+  
+  headings.each((_, element) => {
     const heading = $(element).text().trim();
+    
+    // Skip empty headings
+    if (!heading) {
+      return;
+    }
 
     const items = $(element)
       .nextUntil(
@@ -190,18 +198,26 @@ function parseHTML(htmlContent: string): Record<string, any[]> {
             )
             .get();
         } else {
-          return $(elem).text().trim(); // Inline and mixed content
+          const text = $(elem).text().trim();
+          return text || undefined; // Filter out empty strings
         }
       })
-      .get();
+      .get()
+      .filter(item => item !== undefined); // Remove undefined items
 
     // Fallback: Add heading with raw content if no items are found
     if (items.length === 0) {
-      items.push($(element).next().text().trim());
+      const nextText = $(element).next().text().trim();
+      if (nextText) {
+        items.push(nextText);
+      }
     }
 
-    sections[heading] = sections[heading] || [];
-    sections[heading].push(...items.flat());
+    // Only add section if it has content
+    if (items.length > 0) {
+      sections[heading] = sections[heading] || [];
+      sections[heading].push(...items.flat());
+    }
   });
 
   logger.debug(`Parsed sections: ${JSON.stringify(sections, null, 2)}`);
@@ -242,61 +258,74 @@ export async function parseIncludedPackage(pkg: PackageData): Promise<ParseResul
       const importantTerms: any[] = [];
       const categorizedNotes: any[] = [];
 
-      notes.forEach((note) => {
-        try {
-          const { htmlContent, metadata } = convertMarkdownToHTML(note.notes);
-          logger.debug(
-            `${packageName} [${note.version}]: Markdown converted to HTML with metadata: ${JSON.stringify(
-              metadata
-            )}`
-          );
+      // Process notes in parallel for better performance
+      const processedNotes = await Promise.all(
+        notes.map(async (note) => {
+          try {
+            const { htmlContent, metadata } = convertMarkdownToHTML(note.notes);
+            logger.debug(
+              `${packageName} [${note.version}]: Markdown converted to HTML with metadata: ${JSON.stringify(
+                metadata
+              )}`
+            );
 
-          const parsedSections = parseHTML(htmlContent);
-          logger.debug(
-            `${packageName} [${note.version}]: Parsed HTML sections: ${JSON.stringify(
-              parsedSections,
-              null,
-              2
-            )}`
-          );
+            const parsedSections = parseHTML(htmlContent);
+            logger.debug(
+              `${packageName} [${note.version}]: Parsed HTML sections: ${JSON.stringify(
+                parsedSections,
+                null,
+                2
+              )}`
+            );
 
-          const tfidfResults = computeTFIDFRankings(parsedSections);
-          logger.debug(
-            `${packageName} [${note.version}]: Computed TF-IDF rankings: ${JSON.stringify(
-              tfidfResults,
-              null,
-              2
-            )}`
-          );
+            const tfidfResults = computeTFIDFRankings(parsedSections);
+            logger.debug(
+              `${packageName} [${note.version}]: Computed TF-IDF rankings: ${JSON.stringify(
+                tfidfResults,
+                null,
+                2
+              )}`
+            );
 
-          const compromiseResults = analyzeLogCategorization(parsedSections);
-          logger.debug(
-            `${packageName} [${note.version}]: Compromise analysis results: ${JSON.stringify(
-              compromiseResults,
-              null,
-              2
-            )}`
-          );
+            const compromiseResults = analyzeLogCategorization(parsedSections);
+            logger.debug(
+              `${packageName} [${note.version}]: Compromise analysis results: ${JSON.stringify(
+                compromiseResults,
+                null,
+                2
+              )}`
+            );
 
-          importantTerms.push({
-            version: note.version || UNKNOWN,
-            published_at: note.published_at || UNKNOWN,
-            terms: tfidfResults,
-          });
+            return {
+              importantTerm: {
+                version: note.version || UNKNOWN,
+                published_at: note.published_at || UNKNOWN,
+                terms: tfidfResults,
+              },
+              categorizedNote: {
+                version: note.version || UNKNOWN,
+                published_at: note.published_at || UNKNOWN,
+                categorized: compromiseResults,
+                logMetadata: metadata,
+                logSource: logSource,
+              },
+            };
+          } catch (error: any) {
+            logger.error(
+              `${packageName} [${note.version}]: Error processing ${logSource} - ${error.message}`
+            );
+            return null;
+          }
+        })
+      );
 
-          categorizedNotes.push({
-            version: note.version || UNKNOWN,
-            published_at: note.published_at || UNKNOWN,
-            categorized: compromiseResults,
-            logMetadata: metadata,
-            logSource: logSource,
-          });
-        } catch (error: any) {
-          logger.error(
-            `${packageName} [${note.version}]: Error processing ${logSource} - ${error.message}`
-          );
+      // Filter out failed notes and collect results
+      for (const result of processedNotes) {
+        if (result) {
+          importantTerms.push(result.importantTerm);
+          categorizedNotes.push(result.categorizedNote);
         }
-      });
+      }
 
       return Promise.resolve({
         importantTerms,
